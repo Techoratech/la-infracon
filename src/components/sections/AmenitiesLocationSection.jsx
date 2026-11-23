@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   Trees,
   Car,
@@ -17,10 +18,148 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
+import {
+  useSplitReveal,
+  SplitText,
+  useClipReveal,
+  useStagger,
+  SectionDivider,
+  isReducedMotion,
+} from '../../utils/animations.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
+
+function ConnectivityItem({ item, index }) {
+  const [distanceDisplay, setDistanceDisplay] = useState(0);
+  const itemRef = useRef(null);
+
+  useEffect(() => {
+    const el = itemRef.current;
+    if (!el) return;
+
+    if (isReducedMotion()) {
+      setDistanceDisplay(item.distanceNum);
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        el,
+        { opacity: 0, x: -30 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.8,
+          delay: index * 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => {
+              const obj = { val: 0 };
+              gsap.to(obj, {
+                val: item.distanceNum,
+                duration: 1.4,
+                ease: 'power2.out',
+                onUpdate: () => setDistanceDisplay(Math.round(obj.val)),
+              });
+            },
+          },
+        }
+      );
+    }, el);
+
+    return () => ctx.revert();
+  }, [index, item.distanceNum]);
+
+  return (
+    <div
+      ref={itemRef}
+      className="flex items-center justify-between p-3.5 rounded-xl bg-ivory border border-sand/30 hover:border-black/30 transition-colors will-change-transform"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-beige border border-sand/50 flex items-center justify-center shrink-0">
+          <MapPin className="w-4 h-4 text-black" />
+        </div>
+        <div>
+          <div className="text-xs sm:text-sm font-medium text-black">
+            {item.destination}
+          </div>
+          <div className="text-[10px] text-taupe">
+            {item.note}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 font-mono text-xs sm:text-sm font-semibold text-black shrink-0">
+        <Clock className="w-3.5 h-3.5 text-taupe" />
+        <span>{distanceDisplay} {item.distanceUnit}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function AmenitiesLocationSection() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const amenitiesHeadingRef = useSplitReveal({ stagger: 0.06 });
+  const locationHeadingRef = useSplitReveal({ stagger: 0.06 });
+  const mapClipRef = useClipReveal({ duration: 1.2 });
+  const amenitiesGridRef = useRef(null);
+
+  // Staggered wave pattern for 9 amenity cards (diagonal delay: (row + col) * 0.08)
+  useEffect(() => {
+    const grid = amenitiesGridRef.current;
+    if (!grid || isReducedMotion()) return;
+
+    const cards = grid.querySelectorAll('.amenity-card');
+    const cols = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1;
+
+    const ctx = gsap.context(() => {
+      cards.forEach((card, i) => {
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const diagonalDelay = (row + col) * 0.09;
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: grid,
+            start: 'top 80%',
+            once: true,
+          },
+        });
+
+        tl.fromTo(
+          card,
+          { opacity: 0, y: 35, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.8,
+            delay: diagonalDelay,
+            ease: 'power3.out',
+          }
+        );
+
+        // Icon bounce pop
+        const icon = card.querySelector('.amenity-icon');
+        if (icon) {
+          tl.fromTo(
+            icon,
+            { scale: 0 },
+            {
+              scale: 1,
+              duration: 0.5,
+              ease: 'back.out(2.2)',
+            },
+            `-=${0.5}`
+          );
+        }
+      });
+    }, grid);
+
+    return () => ctx.revert();
+  }, []);
 
   const getAmenityIcon = (iconName) => {
     const props = { className: 'w-6 h-6 text-black' };
@@ -50,7 +189,6 @@ export default function AmenitiesLocationSection() {
   return (
     <section
       id="amenities"
-      ref={sectionRef}
       className="relative py-24 sm:py-32 bg-ivory text-black overflow-hidden border-t border-sand/40"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -62,8 +200,14 @@ export default function AmenitiesLocationSection() {
             <span>Curated Community Features</span>
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black">
-            World-Class <span className="text-taupe-dark font-normal italic">Amenities</span>
+          <h2
+            ref={amenitiesHeadingRef}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black"
+          >
+            <SplitText>World-Class</SplitText>{' '}
+            <span className="text-taupe-dark font-normal italic inline-block">
+              <SplitText>Amenities</SplitText>
+            </span>
           </h2>
 
           <p className="mt-4 text-sm sm:text-base text-black/75 leading-relaxed font-light">
@@ -71,18 +215,15 @@ export default function AmenitiesLocationSection() {
           </p>
         </div>
 
-        {/* 9 Amenities Grid (White cards on Ivory background with minimal black icons) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-28">
-          {siteConfig.amenities.map((item, idx) => (
-            <motion.div
+        {/* 9 Amenities Grid with Diagonal Wave Delay */}
+        <div ref={amenitiesGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-28">
+          {siteConfig.amenities.map((item) => (
+            <div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.05 * idx }}
-              className="rounded-2xl p-6 bg-white border border-sand/45 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 group flex flex-col justify-between"
+              className="amenity-card rounded-2xl p-6 bg-white border border-sand/45 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 group flex flex-col justify-between will-change-transform"
             >
               <div>
-                <div className="w-12 h-12 rounded-xl bg-beige-light border border-sand/60 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300">
+                <div className="amenity-icon w-12 h-12 rounded-xl bg-beige-light border border-sand/60 flex items-center justify-center mb-4 will-change-transform">
                   {getAmenityIcon(item.icon)}
                 </div>
 
@@ -97,9 +238,9 @@ export default function AmenitiesLocationSection() {
 
               <div className="mt-4 pt-3 border-t border-sand/25 flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-taupe">
                 <span>Infrastructure Standard</span>
-                <span className="text-black font-semibold">&bull; Certified</span>
+                <span className="text-black font-semibold">&bull; Planned</span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -111,8 +252,14 @@ export default function AmenitiesLocationSection() {
               <span>Unmatched Accessibility</span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-black">
-              Location & <span className="text-taupe-dark font-normal italic">Connectivity</span>
+            <h2
+              ref={locationHeadingRef}
+              className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-black"
+            >
+              <SplitText>Location &</SplitText>{' '}
+              <span className="text-taupe-dark font-normal italic inline-block">
+                <SplitText>Connectivity</SplitText>
+              </span>
             </h2>
 
             <p className="mt-3 text-sm sm:text-base text-black/70 font-light">
@@ -134,31 +281,13 @@ export default function AmenitiesLocationSection() {
                   </span>
                 </div>
 
-                <div className="space-y-3.5">
+                <div className="space-y-3">
                   {siteConfig.connectivity.map((conn, idx) => (
-                    <div
+                    <ConnectivityItem
                       key={idx}
-                      className="flex items-center justify-between p-3 rounded-xl bg-ivory border border-sand/30 hover:border-black/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-beige border border-sand/50 flex items-center justify-center shrink-0">
-                          <MapPin className="w-4 h-4 text-black" />
-                        </div>
-                        <div>
-                          <div className="text-xs sm:text-sm font-medium text-black">
-                            {conn.destination}
-                          </div>
-                          <div className="text-[10px] text-taupe">
-                            {conn.note}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 font-mono text-xs sm:text-sm font-semibold text-black shrink-0">
-                        <Clock className="w-3.5 h-3.5 text-taupe" />
-                        <span>{conn.distance}</span>
-                      </div>
-                    </div>
+                      item={conn}
+                      index={idx}
+                    />
                   ))}
                 </div>
               </div>
@@ -181,8 +310,11 @@ export default function AmenitiesLocationSection() {
               </div>
             </div>
 
-            {/* Embedded Google Map Iframe (7 cols) */}
-            <div className="lg:col-span-7 rounded-3xl overflow-hidden border border-sand/50 shadow-luxury relative min-h-[380px] flex flex-col bg-beige-light">
+            {/* Embedded Google Map Iframe with Clip Wipe Reveal (7 cols) */}
+            <div
+              ref={mapClipRef}
+              className="lg:col-span-7 rounded-3xl overflow-hidden border border-sand/50 shadow-luxury relative min-h-[380px] flex flex-col bg-beige-light will-change-transform"
+            >
               <div className="relative w-full h-full flex-1 min-h-[350px]">
                 <iframe
                   title="Palm Corridor Location Map"
@@ -196,7 +328,6 @@ export default function AmenitiesLocationSection() {
                   className="w-full h-full absolute inset-0 opacity-95"
                 />
 
-                {/* Overlay Badge */}
                 <div className="absolute top-4 left-4 p-3 rounded-xl bg-white/95 backdrop-blur-md border border-sand shadow-luxury-sm pointer-events-none">
                   <div className="flex items-center gap-2 text-xs font-semibold text-black">
                     <MapPin className="w-4 h-4 text-black animate-bounce" />
@@ -213,6 +344,8 @@ export default function AmenitiesLocationSection() {
         </div>
 
       </div>
+
+      <SectionDivider className="mt-24 max-w-7xl mx-auto px-4" />
     </section>
   );
 }

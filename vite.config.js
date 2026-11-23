@@ -3,10 +3,13 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
+  },
   server: {
     port: 3000,
     open: false,
-    host: true
+    host: true,
   },
   build: {
     chunkSizeWarningLimit: 1000,
@@ -16,8 +19,8 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           animation: ['framer-motion', 'gsap'],
           icons: ['lucide-react'],
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 });

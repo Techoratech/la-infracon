@@ -1,37 +1,134 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { MapPin, Home, Compass, Trees, Sparkles, ChevronRight, MoveRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { MapPin, Home, Compass, Trees, Sparkles, ChevronRight } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
+import { useSplitReveal, SplitText, SectionDivider, isReducedMotion } from '../../utils/animations.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function ProjectSection() {
   const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
+  const headingRef = useSplitReveal({ stagger: 0.07 });
+  const showcasePinRef = useRef(null);
+  const trackRef = useRef(null);
+
   const [counts, setCounts] = useState(siteConfig.projectStats.map(() => 0));
+  const [statsInView, setStatsInView] = useState(false);
 
+  // Stats Count-up triggered on enter
   useEffect(() => {
-    if (!isInView) return;
+    const el = sectionRef.current;
+    if (!el) return;
 
-    const duration = 1800;
-    const startTime = performance.now();
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: 'top 75%',
+      once: true,
+      onEnter: () => {
+        setStatsInView(true);
+        const duration = 1800;
+        const startTime = performance.now();
 
-    const animateStats = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
+        const animate = (time) => {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
 
-      setCounts(
-        siteConfig.projectStats.map((stat) => Math.round(stat.value * ease))
-      );
+          setCounts(
+            siteConfig.projectStats.map((stat) => Math.round(stat.value * ease))
+          );
 
-      if (progress < 1) {
-        requestAnimationFrame(animateStats);
-      } else {
-        setCounts(siteConfig.projectStats.map((stat) => stat.value));
-      }
-    };
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            setCounts(siteConfig.projectStats.map((stat) => stat.value));
+          }
+        };
 
-    requestAnimationFrame(animateStats);
-  }, [isInView]);
+        requestAnimationFrame(animate);
+      },
+    });
+
+    return () => st.kill();
+  }, []);
+
+  // Desktop Horizontal Pinned Scroll Showcase
+  useEffect(() => {
+    const pinContainer = showcasePinRef.current;
+    const track = trackRef.current;
+    if (!pinContainer || !track || isReducedMotion()) return;
+
+    const mm = gsap.matchMedia();
+
+    // Desktop: pin and slide horizontally
+    mm.add('(min-width: 768px)', () => {
+      const getScrollAmount = () => {
+        return track.scrollWidth - pinContainer.offsetWidth + 80;
+      };
+
+      const tween = gsap.to(track, {
+        x: () => -getScrollAmount(),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: pinContainer,
+          pin: true,
+          scrub: 0.8,
+          start: 'top 10%',
+          end: () => `+=${getScrollAmount() + 400}`,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Individual image scale/parallax inside track
+      const slides = track.querySelectorAll('.showcase-slide');
+      slides.forEach((slide) => {
+        const img = slide.querySelector('img');
+        if (img) {
+          gsap.fromTo(
+            img,
+            { scale: 1.12 },
+            {
+              scale: 1.0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: slide,
+                containerAnimation: tween,
+                start: 'left right',
+                end: 'right left',
+                scrub: true,
+              },
+            }
+          );
+        }
+      });
+    });
+
+    // Mobile: vertical stack fade-up
+    mm.add('(max-width: 767px)', () => {
+      const slides = track.querySelectorAll('.showcase-slide');
+      slides.forEach((slide, idx) => {
+        gsap.fromTo(
+          slide,
+          { opacity: 0, y: 35 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: idx * 0.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: slide,
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+      });
+    });
+
+    return () => mm.revert();
+  }, []);
 
   const getStatIcon = (index) => {
     const props = { className: 'w-5 h-5 text-black' };
@@ -52,67 +149,80 @@ export default function ProjectSection() {
     <section
       id="project"
       ref={sectionRef}
-      className="relative py-20 sm:py-32 bg-white text-black overflow-hidden border-t border-sand/30"
+      className="relative py-24 sm:py-32 bg-white text-black overflow-hidden border-t border-sand/30"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-beige border border-sand text-taupe-dark text-xs uppercase tracking-[0.2em] mb-4">
             <Sparkles className="w-3.5 h-3.5 text-black" />
             <span>Masterplan & Vision</span>
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black">
-            {siteConfig.project.name}
+          <h2
+            ref={headingRef}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black"
+          >
+            <SplitText>{siteConfig.project.name}</SplitText>
           </h2>
 
-          <p className="mt-3 sm:mt-4 text-sm sm:text-base text-black/75 leading-relaxed font-light">
+          <p className="mt-4 text-sm sm:text-base text-black/75 leading-relaxed font-light">
             {siteConfig.project.shortDescription}
           </p>
         </div>
 
-        {/* Animated Figures Strip (Beige/Ivory cards with soft luxury shadow) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6 mb-16 sm:mb-20">
-          {siteConfig.projectStats.map((stat, idx) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 * idx }}
-              className="p-4 sm:p-6 rounded-2xl bg-ivory border border-sand/40 text-center shadow-luxury-sm hover:shadow-luxury transition-all duration-300 relative group"
-            >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-beige border border-sand/60 mx-auto flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-105 transition-transform">
-                {getStatIcon(idx)}
-              </div>
-
-              <div className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-black">
-                {counts[idx]}
-                <span className="text-lg sm:text-2xl font-sans text-taupe ml-0.5">
-                  {stat.suffix}
-                </span>
-              </div>
-
-              <div className="text-xs sm:text-sm font-semibold text-black tracking-wide mt-1.5 sm:mt-2">
-                {stat.label}
-              </div>
-
-              <div className="text-[10px] sm:text-[11px] text-taupe mt-0.5 sm:mt-1 font-light leading-snug">
-                {stat.sublabel}
-              </div>
-
-              {stat.isPlaceholder && (
-                <div className="text-[8px] sm:text-[9px] uppercase tracking-wider text-sand-dark font-mono mt-1.5 sm:mt-2">
-                  [Config Editable]
+        {/* Figures Strip with Lines Drawing Between Them */}
+        <div className="relative mb-24">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 relative z-10">
+            {siteConfig.projectStats.map((stat, idx) => (
+              <div
+                key={stat.label}
+                className="p-6 rounded-2xl bg-ivory border border-sand/40 text-center shadow-luxury-sm hover:shadow-luxury transition-all duration-300 relative group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-beige border border-sand/60 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  {getStatIcon(idx)}
                 </div>
-              )}
-            </motion.div>
-          ))}
+
+                <div className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-black font-mono">
+                  {counts[idx]}
+                  <span className="text-2xl sm:text-3xl font-sans text-taupe ml-0.5">
+                    {stat.suffix}
+                  </span>
+                </div>
+
+                <div className="text-xs sm:text-sm font-semibold text-black tracking-wide mt-2">
+                  {stat.label}
+                </div>
+
+                <div className="text-[11px] text-taupe mt-1 font-light">
+                  {stat.sublabel}
+                </div>
+
+                {stat.isPlaceholder && (
+                  <div className="text-[9px] uppercase tracking-wider text-sand-dark font-mono mt-2">
+                    [Config Editable]
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Thin Drawing Line across stats strip */}
+          <div
+            className={`hidden lg:block absolute top-1/2 left-0 right-0 h-[1px] bg-sand/40 -z-0 transition-transform duration-1000 ${
+              statsInView ? 'scale-x-100' : 'scale-x-0'
+            }`}
+            style={{ transformOrigin: 'left center' }}
+          />
         </div>
 
-        {/* Architectural Showcase Gallery Strip */}
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8">
+      </div>
+
+      {/* Horizontal Scroll Showcase (Pinned on Desktop, Vertical Stack on Mobile) */}
+      <div ref={showcasePinRef} className="w-full relative mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between">
             <div>
               <span className="text-xs uppercase tracking-[0.25em] text-taupe font-mono">
                 Project Visuals
@@ -121,80 +231,66 @@ export default function ProjectSection() {
                 Visualizing <span className="text-taupe-dark font-normal italic">The Sanctuary</span>
               </h3>
             </div>
-            
-            <div className="flex items-center justify-between sm:justify-end gap-3 mt-2 sm:mt-0">
-              <p className="text-xs sm:text-sm text-black/60 max-w-sm font-light hidden sm:block">
-                Explore the master-planned symmetry, palm-shaded avenues, and royal entrance gates.
-              </p>
-              {/* Mobile Swipe Cue */}
-              <div className="flex items-center gap-1.5 text-[11px] text-taupe font-mono uppercase tracking-wider sm:hidden bg-beige/60 px-2.5 py-1 rounded-full border border-sand/40">
-                <span>Swipe cards</span>
-                <MoveRight className="w-3.5 h-3.5 text-black animate-pulse" />
-              </div>
-            </div>
+            <p className="text-xs sm:text-sm text-black/60 max-w-sm mt-2 sm:mt-0 font-light">
+              Scroll to explore the master-planned symmetry, palm-shaded avenues, and royal entrance gates.
+            </p>
           </div>
+        </div>
 
-          {/* Horizontal scroll container on mobile, 3-column grid on md+ */}
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-5 pt-1 -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible scroll-smooth"
-            style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}
+        {/* Sliding Track */}
+        <div className="overflow-visible px-4 sm:px-6 lg:px-8">
+          <div
+            ref={trackRef}
+            className="flex flex-col md:flex-row gap-6 md:gap-8 will-change-transform"
           >
-            {siteConfig.showcaseCards.map((card, idx) => (
-              <motion.div
+            {siteConfig.showcaseCards.map((card) => (
+              <div
                 key={card.id}
-                initial={{ opacity: 0, y: 25 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.15 * idx }}
-                className="w-[82vw] max-w-[320px] sm:w-[360px] md:w-auto md:max-w-none shrink-0 snap-center md:shrink group rounded-2xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 flex flex-col"
+                className="showcase-slide w-full md:w-[480px] lg:w-[560px] shrink-0 rounded-3xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury flex flex-col group will-change-transform"
               >
-                {/* Visual Image with Zoom */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-beige">
+                {/* Visual Image with Parallax & Scale */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-beige">
                   <img
                     src={card.image}
                     alt={card.title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out will-change-transform"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   
-                  <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4">
-                    <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-wider font-mono bg-white/90 text-black border border-sand/50 backdrop-blur-md font-semibold">
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-mono bg-white/95 text-black border border-sand/50 backdrop-blur-md font-semibold">
                       {card.category}
                     </span>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-serif text-lg sm:text-xl font-bold text-black group-hover:text-taupe-dark transition-colors">
+                    <h4 className="font-serif text-xl sm:text-2xl font-bold text-black group-hover:text-taupe-dark transition-colors">
                       {card.title}
                     </h4>
-                    <p className="text-xs text-black/70 leading-relaxed font-light mt-1.5 sm:mt-2">
+                    <p className="text-xs sm:text-sm text-black/75 leading-relaxed font-light mt-2">
                       {card.description}
                     </p>
                   </div>
                   
-                  <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-sand/30 flex items-center justify-between text-xs text-taupe">
-                    <span className="font-mono text-[11px]">Palm Corridor Sector</span>
-                    <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform text-black" />
+                  <div className="pt-4 mt-4 border-t border-sand/30 flex items-center justify-between text-xs text-taupe font-mono">
+                    <span>Palm Corridor Sector</span>
+                    <span className="flex items-center gap-1 text-black font-sans font-medium group-hover:translate-x-1 transition-transform">
+                      <span>Explore</span>
+                      <ChevronRight className="w-4 h-4 text-black" />
+                    </span>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Mobile Dot Indicators */}
-          <div className="flex items-center justify-center gap-1.5 mt-2 md:hidden">
-            {siteConfig.showcaseCards.map((_, i) => (
-              <span
-                key={i}
-                className="w-1.5 h-1.5 rounded-full bg-sand/60"
-              />
+              </div>
             ))}
           </div>
         </div>
-
       </div>
+
+      <SectionDivider className="mt-24 max-w-7xl mx-auto px-4" />
     </section>
   );
 }

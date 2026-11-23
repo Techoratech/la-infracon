@@ -1,53 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, MessageCircle, ArrowRight } from 'lucide-react';
+import { Menu, X, Phone, MessageCircle, ArrowRight, Instagram, Facebook, Youtube } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
 import { scrollToTarget } from '../../utils/scrollManager';
 
-export default function Header({ onOpenEnquiry }) {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+export default function Header() {
+  const [isPastHero, setIsPastHero] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const navLinks = [
-    { name: 'Home', href: '#hero' },
-    { name: 'Growth', href: '#growth' },
-    { name: 'About', href: '#about' },
-    { name: 'Project', href: '#project' },
-    { name: 'Plots', href: '#plots' },
-    { name: 'Amenities', href: '#amenities' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', href: '#hero', id: 'hero' },
+    { name: 'About', href: '#about', id: 'about' },
+    { name: 'Project', href: '#project', id: 'project' },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const scrollY = window.scrollY;
+      const heroEl = document.getElementById('hero');
+      const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
 
-      // Scrolled state
-      setIsScrolled(currentScrollY > 40);
+      // Track if past hero
+      setIsPastHero(scrollY > heroHeight - 120);
 
-      // Hide on scroll down, show on scroll up
-      if (currentScrollY > 150) {
-        if (currentScrollY > lastScrollY && !mobileMenuOpen) {
-          setIsVisible(false);
-        } else {
-          setIsVisible(true);
-        }
-      } else {
-        setIsVisible(true);
+      // Scroll progress
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScroll > 0) {
+        setScrollProgress(Math.min(100, Math.max(0, (scrollY / totalScroll) * 100)));
       }
-      setLastScrollY(currentScrollY);
 
-      // Active section highlight
-      const sections = ['hero', 'growth', 'about', 'project', 'plots', 'amenities', 'contact'];
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
+      // Track active section with ScrollTrigger thresholds
+      const sections = ['contact', 'project', 'about', 'hero'];
+      for (const id of sections) {
+        const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 250 && rect.bottom >= 150) {
-            setActiveSection(sectionId);
+          if (rect.top <= 200) {
+            setActiveSection(id);
             break;
           }
         }
@@ -55,8 +46,9 @@ export default function Header({ onOpenEnquiry }) {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, mobileMenuOpen]);
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -73,77 +65,62 @@ export default function Header({ onOpenEnquiry }) {
   const handleNavClick = (e, href) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    scrollToTarget(href, -80);
+    scrollToTarget(href, -96);
   };
 
   return (
     <>
+      {/* Floating Pill Navbar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
-        } ${
-          isScrolled
-            ? 'bg-ivory/90 backdrop-blur-md border-b border-sand/40 py-3.5 shadow-luxury-sm text-black'
-            : 'bg-gradient-to-b from-black/80 via-black/30 to-transparent py-5 text-white'
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[90%] max-w-[1100px] rounded-full transition-all duration-500 shadow-luxury-sm ${
+          isPastHero
+            ? 'bg-ivory/85 border border-sand/50 text-black backdrop-blur-xl'
+            : 'bg-black/40 border border-white/20 text-white backdrop-blur-md'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo & Brand Name */}
+        <div className="relative px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+          
+          {/* Logo Only (Left) */}
           <a
             href="#hero"
             onClick={(e) => handleNavClick(e, '#hero')}
-            className="flex items-center gap-3 group"
+            className="flex items-center group py-0.5"
+            aria-label="LA INFRACON Home"
           >
-            <div className="h-8 sm:h-9 flex items-center justify-center">
+            <div className="h-7 sm:h-8 flex items-center justify-center">
               <img
-                src={isScrolled ? siteConfig.brand.logoBlack : siteConfig.brand.logoWhite}
+                src={isPastHero ? siteConfig.brand.logoBlack : siteConfig.brand.logoWhite}
                 alt={siteConfig.brand.name}
                 className="h-full w-auto object-contain transition-opacity duration-300"
               />
             </div>
-            <div className="flex flex-col">
-              <span
-                className={`font-serif text-lg sm:text-xl font-bold tracking-wider transition-colors duration-300 ${
-                  isScrolled ? 'text-black' : 'text-white'
-                }`}
-              >
-                {siteConfig.brand.name}
-              </span>
-              <span
-                className={`text-[9px] uppercase tracking-[0.2em] hidden sm:block transition-colors duration-300 ${
-                  isScrolled ? 'text-taupe' : 'text-white/70'
-                }`}
-              >
-                {siteConfig.brand.tagline}
-              </span>
-            </div>
           </a>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-8">
+          {/* Center Navigation Links (Desktop) */}
+          <nav className="hidden md:flex items-center gap-7 lg:gap-9">
             {navLinks.map((link) => {
-              const isActive = activeSection === link.href.replace('#', '');
+              const isActive = activeSection === link.id;
               return (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className={`text-xs uppercase tracking-[0.16em] font-medium transition-colors relative py-1.5 ${
-                    isScrolled
+                  className={`text-xs uppercase tracking-[0.2em] font-medium relative py-1 transition-colors ${
+                    isPastHero
                       ? isActive
                         ? 'text-black font-semibold'
                         : 'text-black/60 hover:text-black'
                       : isActive
                       ? 'text-white font-semibold'
-                      : 'text-white/75 hover:text-white'
+                      : 'text-white/70 hover:text-white'
                   }`}
                 >
                   {link.name}
                   {isActive && (
                     <motion.span
-                      layoutId="activeNavUnderline"
-                      className={`absolute bottom-0 left-0 right-0 h-[1.5px] ${
-                        isScrolled ? 'bg-black' : 'bg-white'
+                      layoutId="activeNavIndicator"
+                      className={`absolute -bottom-1 left-0 right-0 h-[1.5px] rounded-full ${
+                        isPastHero ? 'bg-black' : 'bg-white'
                       }`}
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
@@ -153,123 +130,159 @@ export default function Header({ onOpenEnquiry }) {
             })}
           </nav>
 
-          {/* Desktop CTA & Phone */}
-          <div className="hidden sm:flex items-center gap-5">
+          {/* Right Action: Contact Pill Button */}
+          <div className="hidden md:flex items-center">
             <a
-              href={`tel:${siteConfig.contact.phoneDial}`}
-              className={`flex items-center gap-2 text-xs uppercase tracking-wider font-mono transition-colors ${
-                isScrolled ? 'text-black/80 hover:text-black' : 'text-white/80 hover:text-white'
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className={`rounded-full px-5 py-2 text-xs uppercase tracking-widest font-semibold transition-all duration-300 ${
+                isPastHero
+                  ? activeSection === 'contact'
+                    ? 'bg-black text-white'
+                    : 'btn-black'
+                  : activeSection === 'contact'
+                  ? 'bg-white text-black'
+                  : 'btn-white'
               }`}
-              title="Direct Call"
             >
-              <Phone className="w-3.5 h-3.5" />
-              <span>{siteConfig.contact.phoneRaw}</span>
+              Contact
             </a>
-
-            <button
-              onClick={() => {
-                if (onOpenEnquiry) onOpenEnquiry();
-                else scrollToTarget('#contact', -80);
-              }}
-              className={`px-5 py-2.5 rounded-full text-xs uppercase tracking-widest font-semibold flex items-center gap-2 ${
-                isScrolled ? 'btn-black' : 'btn-white'
-              }`}
-            >
-              <span>Enquire Now</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <a
-              href={`tel:${siteConfig.contact.phoneDial}`}
-              className={`p-2 rounded-full border ${
-                isScrolled ? 'border-sand text-black' : 'border-white/30 text-white'
-              }`}
-              aria-label="Call LA INFRACON"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
+          {/* Mobile: Hamburger Button */}
+          <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-lg border ${
-                isScrolled ? 'border-sand text-black' : 'border-white/30 text-white'
+              className={`p-2 rounded-full border transition-colors ${
+                isPastHero
+                  ? 'border-sand/60 text-black hover:bg-black/5'
+                  : 'border-white/25 text-white hover:bg-white/10'
               }`}
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+
+          {/* Scroll progress line at bottom edge of pill */}
+          <div className="absolute -bottom-[1px] left-6 right-6 h-[2px] overflow-hidden rounded-full pointer-events-none opacity-60">
+            <div
+              className={`h-full transition-all duration-75 ${
+                isPastHero ? 'bg-black' : 'bg-white'
+              }`}
+              style={{ width: `${scrollProgress}%` }}
+            />
+          </div>
+
         </div>
       </header>
 
-      {/* Fullscreen Mobile Navigation Overlay */}
+      {/* Full-Screen Mobile Ivory Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: '-100%' }}
             animate={{ opacity: 1, y: '0%' }}
             exit={{ opacity: 0, y: '-100%' }}
-            transition={{ duration: 0.4, ease: [0.77, 0, 0.175, 1] }}
-            className="fixed inset-0 z-40 bg-ivory text-black flex flex-col justify-between pt-24 pb-8 px-6 lg:hidden"
+            transition={{ duration: 0.45, ease: [0.77, 0, 0.175, 1] }}
+            className="fixed inset-0 z-40 bg-ivory text-black flex flex-col justify-between pt-24 pb-8 px-6 md:hidden"
           >
-            <div className="flex flex-col gap-4 mt-2">
-              <span className="text-[11px] uppercase tracking-[0.3em] text-taupe font-mono">
-                Palm Corridor Navigation
+            {/* Top Brand Header in Drawer */}
+            <div className="flex items-center justify-between pb-4 border-b border-sand/30">
+              <img
+                src={siteConfig.brand.logoBlack}
+                alt={siteConfig.brand.name}
+                className="h-7 w-auto object-contain"
+              />
+              <span className="text-[11px] font-mono text-taupe uppercase tracking-widest">
+                Navigation
               </span>
-              {navLinks.map((link, idx) => (
+            </div>
+
+            {/* Large Serif Links with Staggered Reveal */}
+            <div className="flex flex-col gap-5 my-auto">
+              {[
+                { name: 'Home', href: '#hero' },
+                { name: 'About', href: '#about' },
+                { name: 'Project', href: '#project' },
+                { name: 'Contact', href: '#contact' },
+              ].map((link, idx) => (
                 <motion.a
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -25 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * idx, duration: 0.3 }}
-                  className="font-serif text-3xl font-medium tracking-wide text-black hover:text-taupe flex items-center justify-between border-b border-sand/30 pb-3"
+                  transition={{ delay: 0.08 * idx, duration: 0.35 }}
+                  className="font-serif text-4xl sm:text-5xl font-medium tracking-wide text-black hover:text-taupe flex items-center justify-between group"
                 >
                   <span>{link.name}</span>
-                  <ArrowRight className="w-4 h-4 text-taupe" />
+                  <ArrowRight className="w-5 h-5 text-sand group-hover:text-black group-hover:translate-x-1 transition-all" />
                 </motion.a>
               ))}
             </div>
 
-            {/* Mobile Footer CTAs & Contact */}
-            <div className="flex flex-col gap-3 pt-6 border-t border-sand/40">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenEnquiry) onOpenEnquiry();
-                  else scrollToTarget('#contact', -80);
-                }}
-                className="btn-black w-full py-3.5 rounded-xl text-center text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2"
-              >
-                <span>Book Site Visit / Enquire</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
+            {/* Mobile Bottom: Phone, WhatsApp, Socials */}
+            <div className="flex flex-col gap-4 pt-6 border-t border-sand/40">
               <div className="grid grid-cols-2 gap-3">
                 <a
                   href={`tel:${siteConfig.contact.phoneDial}`}
-                  className="btn-black-outline py-2.5 rounded-xl text-center text-xs flex items-center justify-center gap-2"
+                  className="btn-black-outline py-3 rounded-xl text-center text-xs flex items-center justify-center gap-2"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>Call {siteConfig.contact.phoneRaw}</span>
+                  <span className="font-mono">{siteConfig.contact.phoneRaw}</span>
                 </a>
                 <a
                   href={`https://wa.me/${siteConfig.contact.whatsappNumber}?text=${encodeURIComponent(
-                    'Hello LA INFRACON, I would like more information about Palm Corridor plots.'
+                    'Hello LA INFRACON, I would like more information about Palm Corridor.'
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-600 text-white hover:bg-emerald-700 py-2.5 rounded-xl text-center text-xs flex items-center justify-center gap-2 transition-colors font-medium"
+                  className="bg-[#25D366] text-white py-3 rounded-xl text-center text-xs flex items-center justify-center gap-2 font-medium"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>
                 </a>
               </div>
 
-              <div className="text-center text-[11px] text-taupe uppercase tracking-widest pt-2">
+              {/* Social Channels (Instagram, Facebook, YouTube only) */}
+              <div className="flex items-center justify-center gap-4 pt-2">
+                {siteConfig.socialLinks.instagram && (
+                  <a
+                    href={siteConfig.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-full border border-sand/50 text-black hover:bg-black hover:text-white transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                )}
+                {siteConfig.socialLinks.facebook && (
+                  <a
+                    href={siteConfig.socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-full border border-sand/50 text-black hover:bg-black hover:text-white transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="w-4 h-4" />
+                  </a>
+                )}
+                {siteConfig.socialLinks.youtube && (
+                  <a
+                    href={siteConfig.socialLinks.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-full border border-sand/50 text-black hover:bg-black hover:text-white transition-colors"
+                    aria-label="YouTube"
+                  >
+                    <Youtube className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+
+              <div className="text-center text-[10px] text-taupe font-mono uppercase tracking-widest pt-1">
                 {siteConfig.brand.tagline}
               </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ChevronDown, MessageCircle, ArrowRight, Compass } from 'lucide-react';
+import { MessageCircle, ArrowRight, Compass } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
 import { frameCache, checkIsMobile } from '../../utils/frameLoader';
 import { scrollToTarget } from '../../utils/scrollManager';
@@ -26,7 +26,8 @@ export default function HeroSection({ onOpenEnquiry }) {
     const getPath = isMobile ? siteConfig.heroFrames.mobilePath : siteConfig.heroFrames.desktopPath;
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
     const ctx = canvas.getContext('2d', { alpha: false });
 
     // Smooth Lerp State
@@ -34,7 +35,6 @@ export default function HeroSection({ onOpenEnquiry }) {
     let targetFrame = 0;
     let animId = null;
 
-    // Handle high DPI and sizing
     let width = window.innerWidth;
     let height = window.innerHeight;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -50,12 +50,10 @@ export default function HeroSection({ onOpenEnquiry }) {
       renderFrame(Math.round(currentFrame));
     };
 
-    // Draw frame with object-fit "cover"
     const renderFrame = (index) => {
       const safeIndex = Math.max(0, Math.min(index, totalFrames - 1));
       let img = targetFrames[safeIndex];
 
-      // If not yet in cache, create or fallback
       if (!img) {
         img = new Image();
         img.src = getPath(safeIndex + 1);
@@ -91,25 +89,20 @@ export default function HeroSection({ onOpenEnquiry }) {
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
-    // Initial first frame render
     renderFrame(0);
 
     const tick = () => {
-      // Lerp interpolation (0.12 factor gives butter-smooth momentum)
       const diff = targetFrame - currentFrame;
       currentFrame += diff * 0.12;
-
       renderFrame(Math.round(currentFrame));
-
       animId = requestAnimationFrame(tick);
     };
     animId = requestAnimationFrame(tick);
 
-    // GSAP ScrollTrigger Scrub
+    // GSAP ScrollTrigger Scrub for canvas & pin
     const pinDistance = isMobile ? '300%' : '350%';
     const st = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: container,
       start: 'top top',
       end: `+=${pinDistance}`,
       pin: true,
@@ -118,6 +111,18 @@ export default function HeroSection({ onOpenEnquiry }) {
         const p = self.progress;
         setScrollProgress(p);
         targetFrame = p * (totalFrames - 1);
+
+        // Subtle scale (1 -> 1.08) on canvas across pin
+        const scaleVal = 1 + p * 0.08;
+        canvas.style.transform = `scale(${scaleVal})`;
+
+        // Fade hero out smoothly into next section at the end (from 0.88 to 1.0)
+        if (p > 0.88) {
+          const fadeOut = (1.0 - p) / 0.12;
+          container.style.opacity = `${Math.max(0, Math.min(1, fadeOut))}`;
+        } else {
+          container.style.opacity = '1';
+        }
       },
     });
 
@@ -155,7 +160,7 @@ export default function HeroSection({ onOpenEnquiry }) {
 
   const phase1Style = getPhaseStyle(0.0, 0.08, 0.24, 0.32);
   const phase2Style = getPhaseStyle(0.33, 0.41, 0.58, 0.66);
-  const phase3Style = getPhaseStyle(0.67, 0.75, 1.01, 1.02);
+  const phase3Style = getPhaseStyle(0.67, 0.75, 0.88, 0.95);
 
   const scrollIndicatorOpacity = Math.max(0, 1 - scrollProgress * 15);
 
@@ -165,7 +170,7 @@ export default function HeroSection({ onOpenEnquiry }) {
       ref={containerRef}
       className={`relative w-full ${
         isReducedMotion ? 'min-h-[100svh]' : 'h-[100svh]'
-      } overflow-hidden bg-black`}
+      } overflow-hidden bg-black transition-opacity duration-300`}
     >
       {/* Background Canvas or Reduced Motion Fallback */}
       {isReducedMotion ? (
@@ -176,11 +181,11 @@ export default function HeroSection({ onOpenEnquiry }) {
       ) : (
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full block object-cover z-0"
+          className="absolute inset-0 w-full h-full block object-cover z-0 will-change-transform"
         />
       )}
 
-      {/* Soft dark gradient behind text at the bottom & vignette so frames stay legible */}
+      {/* Soft dark gradient behind text at the bottom */}
       <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black/85 via-black/35 to-black/50" />
 
       {/* Hero Content Container */}
@@ -229,7 +234,7 @@ export default function HeroSection({ onOpenEnquiry }) {
           className="absolute flex flex-col items-center text-center max-w-3xl px-4 transition-all duration-300"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 border border-white/20 text-white text-[11px] sm:text-xs uppercase tracking-[0.25em] mb-4 backdrop-blur-sm">
-            <span>RERA Approved Freehold Plots</span>
+            <span>Freehold Plotted Development</span>
           </div>
           <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-lg">
             {siteConfig.project.heroHeadline}
@@ -241,7 +246,7 @@ export default function HeroSection({ onOpenEnquiry }) {
           {/* Interactive CTAs on Dark Hero */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             <button
-              onClick={() => scrollToTarget('#growth', -80)}
+              onClick={() => scrollToTarget('#growth', -96)}
               className="btn-white w-full sm:w-auto px-8 py-3.5 rounded-full text-xs uppercase tracking-widest font-semibold flex items-center justify-center gap-2"
             >
               <span>Explore Project</span>

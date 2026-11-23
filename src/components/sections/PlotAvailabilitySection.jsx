@@ -1,15 +1,86 @@
-import React, { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Check, Sparkles, ArrowRight, Compass } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
 import { scrollToTarget } from '../../utils/scrollManager';
+import { useSplitReveal, SplitText, SectionDivider, isReducedMotion } from '../../utils/animations.jsx';
 
-function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
+gsap.registerPlugin(ScrollTrigger);
+
+function AnimatedPlotCard({ plot, index, onSelectPlot }) {
   const cardRef = useRef(null);
+  const svgRef = useRef(null);
+  const [sizeDisplay, setSizeDisplay] = useState(0);
   const [transform, setTransform] = useState('');
 
+  useEffect(() => {
+    const card = cardRef.current;
+    const svg = svgRef.current;
+    if (!card) return;
+
+    if (isReducedMotion()) {
+      setSizeDisplay(plot.numericSize);
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      // Rotation settling to 0 with stagger
+      const initialRot = index === 0 ? -2.5 : index === 2 ? 2.5 : 0;
+      gsap.fromTo(
+        card,
+        {
+          opacity: 0,
+          y: 50,
+          rotate: initialRot,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          rotate: 0,
+          duration: 1.0,
+          delay: index * 0.15,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => {
+              // Count up size number
+              const startVal = { val: 0 };
+              gsap.to(startVal, {
+                val: plot.numericSize,
+                duration: 1.6,
+                ease: 'power2.out',
+                onUpdate: () => setSizeDisplay(Math.round(startVal.val)),
+              });
+
+              // Draw SVG plot boundary lines
+              if (svg) {
+                const paths = svg.querySelectorAll('rect, line, circle');
+                paths.forEach((p) => {
+                  try {
+                    const len = p.getTotalLength ? p.getTotalLength() : 300;
+                    gsap.fromTo(
+                      p,
+                      { strokeDasharray: len, strokeDashoffset: len },
+                      { strokeDashoffset: 0, duration: 1.4, ease: 'power2.out', delay: 0.2 }
+                    );
+                  } catch (e) {}
+                });
+              }
+            },
+          },
+        }
+      );
+    }, card);
+
+    return () => ctx.revert();
+  }, [index, plot.numericSize]);
+
+  // 3D tilt on desktop
   const handleMouseMove = (e) => {
-    if (!cardRef.current || window.innerWidth < 1024) return;
+    if (!cardRef.current || window.innerWidth < 1024 || isReducedMotion()) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -26,12 +97,11 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
     setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
   };
 
-  // SVG plot representation with clean black/sand architectural lines
-  const renderPlotSvg = (id, dimensions) => {
+  const renderPlotSvg = (id) => {
     switch (id) {
       case '600':
         return (
-          <svg viewBox="0 0 160 190" className="w-full h-full max-h-32 text-black">
+          <svg ref={svgRef} viewBox="0 0 160 190" className="w-full h-full max-h-32 text-black">
             <rect x="15" y="155" width="130" height="20" fill="rgba(205,191,168,0.18)" rx="3" stroke="#CDBFA8" strokeDasharray="3 3" />
             <text x="80" y="169" fill="#8C7B66" fontSize="8" textAnchor="middle" fontFamily="monospace">FRONTAGE ROAD (30 FT)</text>
             <rect x="35" y="25" width="90" height="120" fill="#FAF7F2" stroke="#0B0B0B" strokeWidth="1.5" rx="4" />
@@ -46,7 +116,7 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
         );
       case '800':
         return (
-          <svg viewBox="0 0 160 210" className="w-full h-full max-h-32 text-black">
+          <svg ref={svgRef} viewBox="0 0 160 210" className="w-full h-full max-h-32 text-black">
             <rect x="15" y="175" width="130" height="20" fill="rgba(205,191,168,0.22)" rx="3" stroke="#CDBFA8" strokeDasharray="3 3" />
             <text x="80" y="189" fill="#8C7B66" fontSize="8" textAnchor="middle" fontFamily="monospace">FRONTAGE ROAD (30 FT)</text>
             <rect x="38" y="20" width="84" height="145" fill="#FAF7F2" stroke="#0B0B0B" strokeWidth="2" rx="4" />
@@ -62,7 +132,7 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
       case '1000':
       default:
         return (
-          <svg viewBox="0 0 160 190" className="w-full h-full max-h-32 text-black">
+          <svg ref={svgRef} viewBox="0 0 160 190" className="w-full h-full max-h-32 text-black">
             <rect x="15" y="155" width="130" height="20" fill="rgba(205,191,168,0.18)" rx="3" stroke="#CDBFA8" strokeDasharray="3 3" />
             <text x="80" y="169" fill="#8C7B66" fontSize="8" textAnchor="middle" fontFamily="monospace">BOULEVARD ROAD (40 FT)</text>
             <rect x="30" y="22" width="100" height="123" fill="#FAF7F2" stroke="#0B0B0B" strokeWidth="1.5" rx="4" />
@@ -79,27 +149,20 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
   };
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: 0.15 * index }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ transform, transition: 'transform 0.15s ease-out' }}
-      className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-white text-black shadow-luxury transition-all duration-300 ${
-        plot.popular
-          ? 'border-2 border-black'
-          : 'border border-black/15'
+      className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-white text-black shadow-luxury transition-all duration-300 will-change-transform ${
+        plot.popular ? 'border-2 border-black' : 'border border-black/15'
       }`}
     >
-      {/* Top Bar: Numbered Label & Black Available Badge */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="font-mono text-xs uppercase tracking-widest text-taupe font-bold px-2.5 py-1 rounded-md bg-beige-light border border-sand">
             {`0${index + 1}`} &bull; {plot.category}
           </span>
-          {/* Black Available badge */}
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-black text-white">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             {plot.status}
@@ -113,11 +176,11 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
           </div>
         )}
 
-        {/* Size Title & Dimensions */}
+        {/* Counted Size Display */}
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
-            <h3 className="font-serif text-4xl sm:text-5xl font-bold text-black">
-              {plot.size}
+            <h3 className="font-serif text-4xl sm:text-5xl font-bold text-black font-mono">
+              {sizeDisplay}
             </h3>
             <span className="text-xl sm:text-2xl font-serif text-taupe">
               {plot.unit}
@@ -128,12 +191,12 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
           </div>
         </div>
 
-        {/* SVG Proportion Outline */}
+        {/* SVG Proportion Outline with stroke drawing */}
         <div className="my-5 p-3 rounded-2xl bg-ivory border border-sand/50 flex items-center justify-center">
-          {renderPlotSvg(plot.id, plot.dimensions)}
+          {renderPlotSvg(plot.id)}
         </div>
 
-        {/* Features List */}
+        {/* Features */}
         <div className="space-y-2.5 mb-6">
           {plot.features.map((feat, i) => (
             <div key={i} className="flex items-start gap-2.5 text-xs text-black/80 font-light">
@@ -146,7 +209,7 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
         </div>
       </div>
 
-      {/* Ideal For & Solid Black Button */}
+      {/* Button with auto scroll & plot preselection */}
       <div className="pt-5 border-t border-sand/30">
         <p className="text-[11px] text-taupe italic mb-4">
           <strong className="text-black not-italic font-medium">Ideal For: </strong>
@@ -161,38 +224,42 @@ function TiltPlotCard({ plot, index, onSelectPlot, isInView }) {
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 export default function PlotAvailabilitySection({ onSelectPlot }) {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const headingRef = useSplitReveal({ stagger: 0.07 });
 
   const handlePlotEnquire = (size) => {
     if (onSelectPlot) {
       onSelectPlot(size);
     }
-    scrollToTarget('#contact', -80);
+    scrollToTarget('#contact', -96);
   };
 
   return (
     <section
       id="plots"
-      ref={sectionRef}
       className="relative py-24 sm:py-32 bg-beige text-black overflow-hidden border-t border-sand/40"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
+        {/* Section Header with SplitText */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-sand text-taupe-dark text-xs uppercase tracking-[0.2em] mb-4">
             <Compass className="w-3.5 h-3.5 text-black" />
             <span>Tailored Land Parcels</span>
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black">
-            Plot Size <span className="text-taupe-dark font-normal italic">Availability</span>
+          <h2
+            ref={headingRef}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-black"
+          >
+            <SplitText>Plot Size</SplitText>{' '}
+            <span className="text-taupe-dark font-normal italic inline-block">
+              <SplitText>Availability</SplitText>
+            </span>
           </h2>
 
           <p className="mt-4 text-sm sm:text-base text-black/70 leading-relaxed font-light">
@@ -200,25 +267,25 @@ export default function PlotAvailabilitySection({ onSelectPlot }) {
           </p>
         </div>
 
-        {/* 3 Premium Plot Cards Grid */}
+        {/* 3 Animated Rising Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
           {siteConfig.plotSizes.map((plot, idx) => (
-            <TiltPlotCard
+            <AnimatedPlotCard
               key={plot.id}
               plot={plot}
               index={idx}
-              isInView={isInView}
               onSelectPlot={handlePlotEnquire}
             />
           ))}
         </div>
 
-        {/* Note below cards */}
         <div className="mt-12 text-center text-xs text-taupe">
           All plots feature individual boundary markers, water tap-in points, and direct avenue frontage.
         </div>
 
       </div>
+
+      <SectionDivider className="mt-20 max-w-7xl mx-auto px-4" />
     </section>
   );
 }

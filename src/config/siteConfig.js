@@ -24,7 +24,6 @@ export const siteConfig = {
     subtitle: "A new address for premium plotted living",
     heroHeadline: "Your Land. Your Legacy.",
     type: "Plotted Residential Colony",
-    reraNumber: "RERA/PRM/KA/2024/0892 [EDITABLE]",
     shortDescription:
       "Palm Corridor is an exclusive gated plotted community engineered for luxury living, privacy, and exponential capital appreciation. Surrounded by verdant landscapes and modern infrastructure, it offers an address that honors your legacy.",
   },
@@ -48,12 +47,11 @@ export const siteConfig = {
     officeHours: "Monday – Sunday: 9:00 AM – 7:30 PM",
   },
 
-  // Social Media Links (Editable Placeholders)
+  // Social Media Links (Editable Placeholders - Only Instagram, Facebook & YouTube)
   socialLinks: {
-    instagram: "https://instagram.com/lainfracon_official", // [PLACEHOLDER]
-    facebook: "https://facebook.com/lainfracon", // [PLACEHOLDER]
-    youtube: "https://youtube.com/@lainfracon", // [PLACEHOLDER]
-    linkedin: "https://linkedin.com/company/lainfracon", // [PLACEHOLDER]
+    instagram: "https://instagram.com/lainfracon_official", // [PLACEHOLDER - Empty hides icon]
+    facebook: "https://facebook.com/lainfracon", // [PLACEHOLDER - Empty hides icon]
+    youtube: "https://youtube.com/@lainfracon", // [PLACEHOLDER - Empty hides icon]
   },
 
   // Hero Sequence Config
@@ -63,31 +61,24 @@ export const siteConfig = {
     mobileCount: 48,
     mobilePath: (index) => `/frames-mobile/frame_${String(index).padStart(4, "0")}.webp`,
     preloadCriticalCount: 20,
-    staticFallbackImage: "/images/aerial.jpg",
+    staticFallbackImage: "/images/aerial.webp",
   },
 
-  // Growth Section (High prominence: 3.64x in 4 Years)
+  // Growth Section (3.64x in 4 Years - Verified data points only)
   growth: {
-    multiplier: 3.64,
-    multiplierDisplay: "3.64x",
+    startMultiplier: 1.0,
+    startDisplay: "1.00x",
+    endMultiplier: 3.64,
+    endDisplay: "3.64x",
     timelineYears: "4 Years",
-    badge: "Documented Market Appreciation",
-    headline: "Exponential Land Value Growth",
+    totalSurge: "+264%",
+    badge: "Documented Value Appreciation",
+    headline: "3.64x Growth in 4 Years",
     description:
-      "Early investors in Palm Corridor's high-demand growth belt have witnessed their land value multiply by 3.64x in just 48 months, outperforming traditional equities and fixed deposits.",
-    disclaimer: "*Based on historical market appreciation data from registered sub-registrar transactions in the immediate corridor.", // [EDITABLE]
-    dataPoints: [
-      { year: "Year 0", label: "Launch Phase", value: 1.0, formattedVal: "1.00x", rate: "Base Price" },
-      { year: "Year 1", label: "Infra Expansion", value: 1.58, formattedVal: "1.58x", rate: "+58%" },
-      { year: "Year 2", label: "Highway Linkage", value: 2.25, formattedVal: "2.25x", rate: "+125%" },
-      { year: "Year 3", label: "Commercial Hub", value: 2.95, formattedVal: "2.95x", rate: "+195%" },
-      { year: "Year 4", label: "Current Value", value: 3.64, formattedVal: "3.64x", rate: "+264%" },
-    ],
-    highlights: [
-      { title: "364%", label: "Total ROI Achieved" },
-      { title: "27.4%", label: "Compounded Annual Growth Rate (CAGR)" },
-      { title: "100%", label: "Clear Freehold Titles" },
-    ]
+      "Early investors in Palm Corridor's region have seen property value grow 3.64x in just 4 years, outperforming traditional asset classes.",
+    disclaimer: "*Based on market data from registered transactions in the corridor.", // [EDITABLE]
+    startPoint: { year: "Year 0", label: "Launch Phase", value: "1.00x" },
+    endPoint: { year: "Year 4", label: "Current Valuation", value: "3.64x" },
   },
 
   // About Brand Section
@@ -97,7 +88,7 @@ export const siteConfig = {
     storyParagraphs: [
       "LA INFRACON was founded on an unwavering principle: real estate should be an empowering cornerstone of generational wealth. Guided by our mantra 'Creating Living Dreams', we bridge architectural vision with transparent stewardship to deliver planned communities that stand as benchmarks of quality.",
       "Palm Corridor represents our flagship plotted residential sanctuary. Here, tranquil open vistas coalesce with master-planned infrastructure — wide arterial boulevards, underground conduits, dedicated green lungs, and high-security access — designed for families seeking both serene living and peerless capital security.",
-      "With 100% legal compliance, immediate registry options, and customer-first guidance, LA INFRACON is rewriting the standard for plotted developments across the region."
+      "With clear registry protocols and customer-first guidance, LA INFRACON is rewriting the standard for plotted developments across the region."
     ],
     pillars: [
       {
@@ -121,7 +112,7 @@ export const siteConfig = {
         description: "Proactive milestones for road construction, electrification, drainage, and landscaped parks.",
       },
     ],
-    image: "/images/palm-corridor.jpg",
+    image: "/images/palm-corridor.webp",
   },
 
   // Project Figures & Key Highlights
@@ -160,28 +151,28 @@ export const siteConfig = {
     },
   ],
 
-  // Project Showcase Cards (Using provided assets)
+  // Project Showcase Cards (Using compressed WebP assets)
   showcaseCards: [
     {
       id: "aerial",
       title: "Panoramic Master Layout",
       category: "Masterplan Overview",
       description: "An aerial vantage showcasing the symmetry, wide arterial roadways, and green buffers enveloping Palm Corridor.",
-      image: "/images/aerial.jpg",
+      image: "/images/aerial.webp",
     },
     {
       id: "avenue",
       title: "Lush Palm Boulevard",
       category: "Signature Landscape",
       description: "Serene tree-lined avenues, manicured medians, and illuminated pathways designed for peaceful evening walks.",
-      image: "/images/palm-corridor.jpg",
+      image: "/images/palm-corridor.webp",
     },
     {
       id: "entrance",
       title: "Grand Architectural Gateway",
       category: "Arrival Experience",
       description: "A monumental entry gate with 24x7 biometric security checkpoints, visitor screening, and security cabin.",
-      image: "/images/entrance-gate.jpg",
+      image: "/images/entrance-gate.webp",
     },
   ],
 
@@ -190,6 +181,7 @@ export const siteConfig = {
     {
       id: "600",
       size: "600",
+      numericSize: 600,
       unit: "sq.ft",
       dimensions: "20' × 30'",
       category: "Compact Luxury",
@@ -208,11 +200,12 @@ export const siteConfig = {
     {
       id: "800",
       size: "800",
+      numericSize: 800,
       unit: "sq.ft",
       dimensions: "20' × 40'",
       category: "Executive Residence",
       status: "Available",
-      popular: true, // Highlighted card
+      popular: true,
       aspectRatio: "1/2",
       features: [
         "Perfect for 3-4 BHK Duplex Villa with Garden",
@@ -226,6 +219,7 @@ export const siteConfig = {
     {
       id: "1000",
       size: "1000",
+      numericSize: 1000,
       unit: "sq.ft",
       dimensions: "25' × 40'",
       category: "Estate Sovereign",
@@ -303,56 +297,56 @@ export const siteConfig = {
 
   // Connectivity & Location Distances (Placeholders editable)
   connectivity: [
-    { destination: "Expressway / National Highway", distance: "3 mins", note: "Direct 6-lane access" },
-    { destination: "Metro Station & Commuter Rail", distance: "12 mins", note: "Rapid transit hub" },
-    { destination: "Top International Schools", distance: "8 mins", note: "Preschools to Grade 12" },
-    { destination: "Super-Specialty Hospital", distance: "10 mins", note: "24/7 Emergency care" },
-    { destination: "Shopping Mall & Hypermarket", distance: "7 mins", note: "Retail, dining & cinema" },
-    { destination: "International Airport Link", distance: "35 mins", note: "Signal-free expressway drive" },
+    { destination: "Expressway / National Highway", distanceNum: 3, distanceUnit: "mins", note: "Direct 6-lane access" },
+    { destination: "Metro Station & Commuter Rail", distanceNum: 12, distanceUnit: "mins", note: "Rapid transit hub" },
+    { destination: "Top International Schools", distanceNum: 8, distanceUnit: "mins", note: "Preschools to Grade 12" },
+    { destination: "Super-Specialty Hospital", distanceNum: 10, distanceUnit: "mins", note: "24/7 Emergency care" },
+    { destination: "Shopping Mall & Hypermarket", distanceNum: 7, distanceUnit: "mins", note: "Retail, dining & cinema" },
+    { destination: "International Airport Link", distanceNum: 35, distanceUnit: "mins", note: "Signal-free expressway drive" },
   ],
 
-  // Gallery (Using provided images with curated luxury angles)
+  // Gallery (Using compressed WebP assets)
   gallery: [
     {
       id: "g1",
       title: "Master Colony Aerial Vista",
       category: "Masterplan",
-      src: "/images/aerial.jpg",
+      src: "/images/aerial.webp",
       aspect: "wide",
     },
     {
       id: "g2",
       title: "Palm Avenue Boulevard",
       category: "Landscape",
-      src: "/images/palm-corridor.jpg",
+      src: "/images/palm-corridor.webp",
       aspect: "tall",
     },
     {
       id: "g3",
       title: "Grand Gateway Portico",
       category: "Architecture",
-      src: "/images/entrance-gate.jpg",
+      src: "/images/entrance-gate.webp",
       aspect: "square",
     },
     {
       id: "g4",
       title: "Panoramic Estate View",
       category: "Masterplan",
-      src: "/images/aerial.jpg",
+      src: "/images/aerial.webp",
       aspect: "square",
     },
     {
       id: "g5",
       title: "Palm Walkways & Green Enclave",
       category: "Landscape",
-      src: "/images/palm-corridor.jpg",
+      src: "/images/palm-corridor.webp",
       aspect: "wide",
     },
     {
       id: "g6",
       title: "Security & Arrival Boulevard",
       category: "Architecture",
-      src: "/images/entrance-gate.jpg",
+      src: "/images/entrance-gate.webp",
       aspect: "tall",
     },
   ],
@@ -363,7 +357,7 @@ export const siteConfig = {
       id: "v1",
       title: "Palm Corridor - Aerial Drone Walkthrough",
       duration: "02:15",
-      thumbnail: "/images/aerial.jpg",
+      thumbnail: "/images/aerial.webp",
       videoUrl: "", // [PLACEHOLDER - Paste YouTube/Vimeo embed or MP4 URL here]
       description: "Full panoramic drone flyover depicting roadway progress, plot boundaries, and surrounding connectivity.",
     },
@@ -371,7 +365,7 @@ export const siteConfig = {
       id: "v2",
       title: "Ground Reality & Avenue Development",
       duration: "01:45",
-      thumbnail: "/images/palm-corridor.jpg",
+      thumbnail: "/images/palm-corridor.webp",
       videoUrl: "", // [PLACEHOLDER - Paste YouTube/Vimeo embed or MP4 URL here]
       description: "First-person walk through the palm-lined main boulevard, curbing, and park demarcations.",
     },
@@ -379,7 +373,7 @@ export const siteConfig = {
       id: "v3",
       title: "Grand Entrance Gate & Security Cabin",
       duration: "01:10",
-      thumbnail: "/images/entrance-gate.jpg",
+      thumbnail: "/images/entrance-gate.webp",
       videoUrl: "", // [PLACEHOLDER - Paste YouTube/Vimeo embed or MP4 URL here]
       description: "Architectural detail of the monumental stone gateway and boom barrier installation.",
     },

@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   Phone,
   MessageCircle,
   Mail,
   MapPin,
-  CheckCircle2,
   AlertCircle,
   Sparkles,
   ArrowRight,
   Instagram,
   Facebook,
   Youtube,
-  Linkedin,
 } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
+import { useSplitReveal, SplitText, isReducedMotion } from '../../utils/animations.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function EnquirySection({ selectedPlotSize }) {
   const [formData, setFormData] = useState({
@@ -28,6 +30,11 @@ export default function EnquirySection({ selectedPlotSize }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const headingRef = useSplitReveal({ stagger: 0.06 });
+  const leftColRef = useRef(null);
+  const rightColRef = useRef(null);
+  const checkSvgRef = useRef(null);
+
   useEffect(() => {
     if (selectedPlotSize) {
       setFormData((prev) => ({
@@ -36,6 +43,49 @@ export default function EnquirySection({ selectedPlotSize }) {
       }));
     }
   }, [selectedPlotSize]);
+
+  // Slide in left & right columns
+  useEffect(() => {
+    const left = leftColRef.current;
+    const right = rightColRef.current;
+    if (!left || !right || isReducedMotion()) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        left,
+        { opacity: 0, x: -45 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.0,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: left,
+            start: 'top 82%',
+            once: true,
+          },
+        }
+      );
+
+      gsap.fromTo(
+        right,
+        { opacity: 0, x: 45 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.0,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: right,
+            start: 'top 82%',
+            once: true,
+          },
+        }
+      );
+    });
+
+    return () => ctx.revert();
+  }, []);
 
   const validatePhone = (phone) => {
     const clean = phone.replace(/[\s\-\+\(\)]/g, '');
@@ -84,15 +134,21 @@ export default function EnquirySection({ selectedPlotSize }) {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
+        {/* Section Header with SplitText */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-sand/30 text-sand-light text-xs uppercase tracking-[0.2em] mb-4">
             <Sparkles className="w-3.5 h-3.5 text-sand" />
             <span>VIP Site Visit & Consultation</span>
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
-            Book Your <span className="text-sand-light font-normal italic">Site Visit</span>
+          <h2
+            ref={headingRef}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white"
+          >
+            <SplitText>Book Your</SplitText>{' '}
+            <span className="text-sand-light font-normal italic inline-block">
+              <SplitText>Site Visit</SplitText>
+            </span>
           </h2>
 
           <p className="mt-4 text-sm sm:text-base text-sand/80 leading-relaxed font-light">
@@ -103,8 +159,11 @@ export default function EnquirySection({ selectedPlotSize }) {
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
           
-          {/* Left Column: Contact Details (5 cols) */}
-          <div className="lg:col-span-5 card-luxury-dark rounded-3xl p-6 sm:p-8 border border-sand/20 flex flex-col justify-between">
+          {/* Left Column: Contact Details (Slides in from Left) */}
+          <div
+            ref={leftColRef}
+            className="lg:col-span-5 card-luxury-dark rounded-3xl p-6 sm:p-8 border border-sand/20 flex flex-col justify-between will-change-transform"
+          >
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-10 flex items-center justify-center">
@@ -126,7 +185,6 @@ export default function EnquirySection({ selectedPlotSize }) {
 
               {/* Contact List */}
               <div className="space-y-3.5 mb-8">
-                {/* Phone */}
                 <a
                   href={`tel:${siteConfig.contact.phoneDial}`}
                   className="flex items-center gap-3.5 p-3 rounded-xl bg-white/5 border border-sand/20 hover:border-white transition-colors group"
@@ -142,7 +200,6 @@ export default function EnquirySection({ selectedPlotSize }) {
                   </div>
                 </a>
 
-                {/* WhatsApp */}
                 <a
                   href={`https://wa.me/${siteConfig.contact.whatsappNumber}?text=${encodeURIComponent(
                     'Hello LA INFRACON, I am interested in Palm Corridor plots.'
@@ -162,7 +219,6 @@ export default function EnquirySection({ selectedPlotSize }) {
                   </div>
                 </a>
 
-                {/* Email */}
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
                   className="flex items-center gap-3.5 p-3 rounded-xl bg-white/5 border border-sand/20 hover:border-white transition-colors group"
@@ -178,7 +234,6 @@ export default function EnquirySection({ selectedPlotSize }) {
                   </div>
                 </a>
 
-                {/* Site Address */}
                 <div className="flex items-start gap-3.5 p-3 rounded-xl bg-white/5 border border-sand/20">
                   <div className="w-10 h-10 rounded-lg bg-charcoal border border-sand/30 flex items-center justify-center text-white shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4" />
@@ -209,68 +264,75 @@ export default function EnquirySection({ selectedPlotSize }) {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-600 text-white hover:bg-emerald-700 py-2.5 rounded-xl text-center text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 transition-colors"
+                  className="bg-[#25D366] text-white hover:opacity-90 py-2.5 rounded-xl text-center text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 transition-all"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>
                 </a>
               </div>
 
-              {/* Social Channels */}
+              {/* Social Channels (Only active links shown) */}
               <div className="flex items-center justify-between text-xs text-sand">
                 <span className="uppercase tracking-widest text-[10px]">Follow Brand:</span>
                 <div className="flex items-center gap-2.5">
-                  <a
-                    href={siteConfig.socialLinks.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
-                    aria-label="Instagram"
-                  >
-                    <Instagram className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={siteConfig.socialLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
-                    aria-label="Facebook"
-                  >
-                    <Facebook className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={siteConfig.socialLinks.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
-                    aria-label="YouTube"
-                  >
-                    <Youtube className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={siteConfig.socialLinks.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
+                  {siteConfig.socialLinks.instagram && (
+                    <a
+                      href={siteConfig.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
+                      aria-label="Instagram"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {siteConfig.socialLinks.facebook && (
+                    <a
+                      href={siteConfig.socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
+                      aria-label="Facebook"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
+                  {siteConfig.socialLinks.youtube && (
+                    <a
+                      href={siteConfig.socialLinks.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-charcoal hover:bg-white hover:text-black border border-sand/30 transition-colors text-white"
+                      aria-label="YouTube"
+                    >
+                      <Youtube className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: White/Ivory Glass Card Form (7 cols) */}
-          <div className="lg:col-span-7 bg-ivory text-black rounded-3xl p-6 sm:p-10 border border-sand shadow-luxury relative flex flex-col justify-center">
+          {/* Right Column: Glass Form Card (Slides in from Right) */}
+          <div
+            ref={rightColRef}
+            className="lg:col-span-7 bg-ivory text-black rounded-3xl p-6 sm:p-10 border border-sand shadow-luxury relative flex flex-col justify-center will-change-transform"
+          >
             {isSubmitted ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="py-12 flex flex-col items-center text-center max-w-md mx-auto"
-              >
+              <div className="py-12 flex flex-col items-center text-center max-w-md mx-auto">
                 <div className="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center mb-6 shadow-luxury-sm">
-                  <CheckCircle2 className="w-10 h-10 text-white" />
+                  <svg
+                    ref={checkSvgRef}
+                    className="w-10 h-10 text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
                 <h3 className="font-serif text-3xl font-bold text-black mb-2">
                   Enquiry Dispatched!
@@ -287,7 +349,7 @@ export default function EnquirySection({ selectedPlotSize }) {
                 >
                   Submit Another Enquiry
                 </button>
-              </motion.div>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
@@ -300,8 +362,8 @@ export default function EnquirySection({ selectedPlotSize }) {
                 </div>
 
                 {/* Full Name */}
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5">
+                <div className="group">
+                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5 transition-colors group-focus-within:text-black">
                     Full Name <span className="text-black">*</span>
                   </label>
                   <input
@@ -309,8 +371,8 @@ export default function EnquirySection({ selectedPlotSize }) {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g. Vikram Sharma"
-                    className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-black placeholder-taupe/50 focus:outline-none focus:ring-1 focus:ring-black transition-colors ${
-                      errors.name ? 'border-rose-500' : 'border-sand focus:border-black'
+                    className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-black placeholder-taupe/50 focus:outline-none focus:ring-1 focus:ring-black transition-all ${
+                      errors.name ? 'border-rose-500' : 'border-sand focus:border-black shadow-sm'
                     }`}
                   />
                   {errors.name && (
@@ -322,8 +384,8 @@ export default function EnquirySection({ selectedPlotSize }) {
                 </div>
 
                 {/* Phone Number */}
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5">
+                <div className="group">
+                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5 transition-colors group-focus-within:text-black">
                     10-Digit Mobile Number <span className="text-black">*</span>
                   </label>
                   <div className="relative">
@@ -336,8 +398,8 @@ export default function EnquirySection({ selectedPlotSize }) {
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="92037 07177"
                       maxLength={14}
-                      className={`w-full pl-14 pr-4 py-3 rounded-xl bg-white border text-sm text-black font-mono placeholder-taupe/50 focus:outline-none focus:ring-1 focus:ring-black transition-colors ${
-                        errors.phone ? 'border-rose-500' : 'border-sand focus:border-black'
+                      className={`w-full pl-14 pr-4 py-3 rounded-xl bg-white border text-sm text-black font-mono placeholder-taupe/50 focus:outline-none focus:ring-1 focus:ring-black transition-all ${
+                        errors.phone ? 'border-rose-500' : 'border-sand focus:border-black shadow-sm'
                       }`}
                     />
                   </div>
@@ -373,8 +435,8 @@ export default function EnquirySection({ selectedPlotSize }) {
                 </div>
 
                 {/* Message */}
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5">
+                <div className="group">
+                  <label className="block text-xs uppercase tracking-wider text-black/80 font-medium mb-1.5 transition-colors group-focus-within:text-black">
                     Questions or Specific Requirements (Optional)
                   </label>
                   <textarea
@@ -382,11 +444,11 @@ export default function EnquirySection({ selectedPlotSize }) {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="e.g. Interested in road-facing plot with immediate registry details..."
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-sand text-sm text-black placeholder-taupe/50 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-sand text-sm text-black placeholder-taupe/50 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all resize-none shadow-sm"
                   />
                 </div>
 
-                {/* Solid Black Submit Button */}
+                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isSubmitting}

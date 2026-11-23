@@ -5,11 +5,11 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 let lenis = null;
+let tickerCallback = null;
 
 export const initSmoothScroll = () => {
   if (typeof window === 'undefined') return null;
 
-  // Check prefers-reduced-motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) {
     return null;
@@ -27,14 +27,13 @@ export const initSmoothScroll = () => {
       infinite: false,
     });
 
-    // Synchronize Lenis scroll with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
-    // Run GSAP ticker alongside Lenis in single unified loop
-    gsap.ticker.add((time) => {
+    tickerCallback = (time) => {
       lenis?.raf(time * 1000);
-    });
+    };
 
+    gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
   }
 
@@ -43,7 +42,18 @@ export const initSmoothScroll = () => {
 
 export const getLenis = () => lenis;
 
-export const scrollToTarget = (target, offset = -75) => {
+export const destroySmoothScroll = () => {
+  if (tickerCallback) {
+    gsap.ticker.remove(tickerCallback);
+    tickerCallback = null;
+  }
+  if (lenis) {
+    lenis.destroy();
+    lenis = null;
+  }
+};
+
+export const scrollToTarget = (target, offset = -96) => {
   if (lenis) {
     lenis.scrollTo(target, { offset, duration: 1.2 });
   } else {

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { initSmoothScroll, scrollToTarget } from './utils/scrollManager';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { initSmoothScroll, destroySmoothScroll, scrollToTarget } from './utils/scrollManager';
 import Preloader from './components/common/Preloader';
-import ProgressBar from './components/common/ProgressBar';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import FloatingActions from './components/common/FloatingActions';
@@ -15,15 +16,25 @@ import AmenitiesLocationSection from './components/sections/AmenitiesLocationSec
 import GallerySection from './components/sections/GallerySection';
 import EnquirySection from './components/sections/EnquirySection';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function App() {
-  const [isPreloaded, setIsPreloaded] = useState(false);
   const [selectedPlotSize, setSelectedPlotSize] = useState('800');
+  const mainRef = useRef(null);
 
   useEffect(() => {
+    // 1. Unified Lenis + GSAP RAF loop
     const lenis = initSmoothScroll();
 
+    // 2. Refresh ScrollTriggers once window and images load
+    const handleLoad = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener('load', handleLoad);
+
     return () => {
-      if (lenis) lenis.destroy();
+      window.removeEventListener('load', handleLoad);
+      destroySmoothScroll();
     };
   }, []);
 
@@ -32,54 +43,54 @@ export default function App() {
   };
 
   const handleOpenEnquiry = () => {
-    scrollToTarget('#contact', -80);
+    scrollToTarget('#contact', -96);
   };
 
   return (
-    <div className="relative min-h-screen bg-ivory text-black font-sans selection:bg-black selection:text-white overflow-x-hidden">
+    <div
+      ref={mainRef}
+      className="relative min-h-screen bg-ivory text-black font-sans selection:bg-black selection:text-white overflow-x-hidden"
+    >
       {/* Subtle Editorial Film Grain Noise Overlay */}
       <div className="film-grain" />
 
-      {/* Top Black Minimal Scroll Progress Bar */}
-      <ProgressBar />
+      {/* Ivory / Black Preloader with frame loading progress */}
+      <Preloader />
 
-      {/* Ivory / Black Preloader */}
-      <Preloader onLoaded={() => setIsPreloaded(true)} />
-
-      {/* Frosted Glass Navigation Header */}
-      <Header onOpenEnquiry={handleOpenEnquiry} />
+      {/* Floating Pill Frosted Glass Navigation Header (Always Visible) */}
+      <Header />
 
       {/* Main Sections */}
       <main id="main-content">
-        {/* C) Hero Section with pinned Canvas Scrub */}
+        {/* C) Hero Section with pinned Canvas Scrub & scale */}
         <HeroSection onOpenEnquiry={handleOpenEnquiry} />
 
-        {/* D) Growth Section: Black background */}
+        {/* D) 3.64x Growth Section: Pinned 200vh scrubbed line & counter */}
         <GrowthSection />
 
-        {/* E) About LA INFRACON: Ivory background */}
+        {/* E) About LA INFRACON: Split reveal, line draw, parallax image */}
         <AboutSection />
 
-        {/* F) Project (Palm Corridor): White background */}
+        {/* F) Project (Palm Corridor): Stats count-up, horizontal slide showcase */}
         <ProjectSection />
 
-        {/* G) Plot Size Availability: Beige background with white tilt cards */}
+        {/* G) Plot Size Availability: Staggered rising tilt cards & SVG line draws */}
         <PlotAvailabilitySection onSelectPlot={handlePlotSelection} />
 
-        {/* H) Amenities & Strategic Location: Ivory background */}
+        {/* H) Amenities & Location: Wave pattern stagger, clip wipe map, distance counters */}
         <AmenitiesLocationSection />
 
-        {/* I) Gallery & Site Reality Videos: White background with grayscale-to-color */}
+        {/* I) Gallery & Site Reality Videos: Clip-path masonry, pulsing play button */}
         <GallerySection />
 
-        {/* J) VIP Enquiry & Lead Capture: Black background */}
+        {/* J) VIP Enquiry: Split text, sliding columns, animated checkmark */}
         <EnquirySection selectedPlotSize={selectedPlotSize} />
       </main>
 
-      {/* K) Footer: Charcoal background */}
+      {/* K) Footer: Upward parallax wordmark, verified links & phone */}
       <Footer />
 
-      {/* L) Global Floating CTAs & Back to Top */}
+      {/* L) Floating CTAs & Back to Top with circular progress ring */}
       <FloatingActions />
     </div>
   );
