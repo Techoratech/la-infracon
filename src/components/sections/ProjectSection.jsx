@@ -21,6 +21,13 @@ export default function ProjectSection() {
     const el = sectionRef.current;
     if (!el) return;
 
+    // Mobile: Show static numbers immediately without scroll lag
+    if (window.innerWidth < 768) {
+      setCounts(siteConfig.projectStats.map((stat) => stat.value));
+      setStatsInView(true);
+      return;
+    }
+
     const st = ScrollTrigger.create({
       trigger: el,
       start: 'top 75%',

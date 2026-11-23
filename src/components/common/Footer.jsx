@@ -40,7 +40,15 @@ export default function Footer() {
     const wordmark = wordmarkRef.current;
     const links = linksRef.current;
     const bigWordmark = bigWordmarkRef.current;
-    if (!footer || isReducedMotion()) return;
+    const isMobile = window.innerWidth < 768;
+    if (!footer || isReducedMotion() || isMobile) {
+      if (wordmark) gsap.set(wordmark, { opacity: 1, y: 0 });
+      if (links) {
+        const linkItems = links.querySelectorAll('li');
+        gsap.set(linkItems, { opacity: 1, y: 0 });
+      }
+      return;
+    }
 
     const ctx = gsap.context(() => {
       // Parallax upward reveal of big background wordmark

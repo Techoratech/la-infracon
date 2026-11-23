@@ -37,8 +37,10 @@ function ConnectivityItem({ item, index }) {
     const el = itemRef.current;
     if (!el) return;
 
-    if (isReducedMotion()) {
+    const isMobile = window.innerWidth < 768;
+    if (isReducedMotion() || isMobile) {
       setDistanceDisplay(item.distanceNum);
+      gsap.set(el, { opacity: 1, x: 0 });
       return;
     }
 
@@ -109,10 +111,17 @@ export default function AmenitiesLocationSection() {
   // Staggered wave pattern for 9 amenity cards (diagonal delay: (row + col) * 0.08)
   useEffect(() => {
     const grid = amenitiesGridRef.current;
-    if (!grid || isReducedMotion()) return;
+    if (!grid) return;
+
+    const isMobile = window.innerWidth < 768;
+    if (isReducedMotion() || isMobile) {
+      const cards = grid.querySelectorAll('.amenity-card');
+      gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
+      return;
+    }
 
     const cards = grid.querySelectorAll('.amenity-card');
-    const cols = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1;
+    const cols = window.innerWidth >= 1024 ? 3 : 2;
 
     const ctx = gsap.context(() => {
       cards.forEach((card, i) => {

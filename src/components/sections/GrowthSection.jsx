@@ -31,9 +31,16 @@ export default function GrowthSection() {
     const path = pathRef.current;
     if (!el || !path) return;
 
-    if (isReducedMotion()) {
+    const isMobile = window.innerWidth < 768;
+
+    // Mobile: Keep normal static display without pinned scroll-jacking
+    if (isReducedMotion() || isMobile) {
       setMultiplier(siteConfig.growth.endMultiplier);
       if (multiplierRef.current) multiplierRef.current.textContent = siteConfig.growth.endMultiplier.toFixed(2);
+      if (surgeRef.current) surgeRef.current.textContent = `${siteConfig.growth.totalSurge} Net Appreciation`;
+      path.style.strokeDasharray = '0';
+      path.style.strokeDashoffset = '0';
+      setDotPos({ x: 640, y: 40 });
       setProgressVal(1);
       return;
     }
@@ -42,15 +49,14 @@ export default function GrowthSection() {
     path.style.strokeDasharray = `${pathLength}`;
     path.style.strokeDashoffset = `${pathLength}`;
 
-    const isMobile = window.innerWidth < 768;
-    const pinDistance = isMobile ? '150%' : '200%';
+    const pinDistance = '200%';
 
     const st = ScrollTrigger.create({
       trigger: el,
       start: 'top top',
       end: `+=${pinDistance}`,
       pin: true,
-      scrub: isMobile ? 0.3 : 0.5,
+      scrub: 0.5,
       onUpdate: (self) => {
         const p = self.progress;
 
@@ -94,7 +100,7 @@ export default function GrowthSection() {
     <section
       id="growth"
       ref={sectionRef}
-      className="relative z-20 -mt-[100vh] sm:-mt-[100svh] min-h-[100svh] bg-black text-white overflow-hidden flex flex-col justify-center py-16 sm:py-20 rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.85)] border-t border-sand/30"
+      className="relative z-20 md:-mt-[100vh] min-h-[100svh] bg-black text-white overflow-hidden flex flex-col justify-center py-16 sm:py-20 md:rounded-t-[48px] md:shadow-[0_-30px_70px_rgba(0,0,0,0.85)] border-t border-sand/30"
     >
       {/* Luxury Pull-tab Indicator */}
       <div className="w-12 h-1 bg-sand/35 rounded-full mx-auto mb-4 sm:mb-6" />

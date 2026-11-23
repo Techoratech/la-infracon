@@ -19,8 +19,10 @@ function AnimatedPlotCard({ plot, index, onSelectPlot }) {
     const svg = svgRef.current;
     if (!card) return;
 
-    if (isReducedMotion()) {
+    const isMobile = window.innerWidth < 768;
+    if (isReducedMotion() || isMobile) {
       setSizeDisplay(plot.numericSize);
+      gsap.set(card, { opacity: 1, y: 0, rotate: 0 });
       return;
     }
 

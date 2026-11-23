@@ -9,6 +9,11 @@ export const isReducedMotion = () => {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
 
+export const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 768;
+};
+
 /**
  * useReveal - Fade-up animation triggered at 85% viewport
  * y: 40 -> 0, opacity: 0 -> 1, 0.9s, ease power3.out
@@ -20,7 +25,7 @@ export function useReveal(options = {}) {
     const el = ref.current;
     if (!el) return;
 
-    if (isReducedMotion()) {
+    if (isReducedMotion() || isMobileDevice()) {
       gsap.set(el, { opacity: 1, y: 0 });
       return;
     }
@@ -64,7 +69,7 @@ export function useSplitReveal(options = {}) {
     const container = ref.current;
     if (!container) return;
 
-    if (isReducedMotion()) {
+    if (isReducedMotion() || isMobileDevice()) {
       const words = container.querySelectorAll('.split-word');
       gsap.set(words, { y: '0%', opacity: 1 });
       return;
@@ -129,18 +134,19 @@ export function useParallax(speed = 8) {
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || isReducedMotion()) return;
+    if (!el) return;
 
-    // Lighter parallax on mobile
-    const isMobile = window.innerWidth < 768;
-    const effectiveSpeed = isMobile ? speed * 0.4 : speed;
+    if (isReducedMotion() || isMobileDevice()) {
+      gsap.set(el, { yPercent: 0 });
+      return;
+    }
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        { yPercent: -effectiveSpeed },
+        { yPercent: -speed },
         {
-          yPercent: effectiveSpeed,
+          yPercent: speed,
           ease: 'none',
           scrollTrigger: {
             trigger: el,
@@ -168,7 +174,7 @@ export function useClipReveal(options = {}) {
     const el = containerRef.current;
     if (!el) return;
 
-    if (isReducedMotion()) {
+    if (isReducedMotion() || isMobileDevice()) {
       gsap.set(el, { clipPath: 'inset(0% 0% 0% 0%)' });
       const img = el.querySelector('img');
       if (img) gsap.set(img, { scale: 1 });
@@ -229,7 +235,7 @@ export function useStagger(childSelector, options = {}) {
     const items = container.querySelectorAll(childSelector);
     if (items.length === 0) return;
 
-    if (isReducedMotion()) {
+    if (isReducedMotion() || isMobileDevice()) {
       gsap.set(items, { opacity: 1, y: 0 });
       return;
     }
@@ -272,7 +278,7 @@ export function useLineDraw(options = {}) {
     const el = lineRef.current;
     if (!el) return;
 
-    if (isReducedMotion()) {
+    if (isReducedMotion() || isMobileDevice()) {
       gsap.set(el, { scaleX: 1 });
       return;
     }
