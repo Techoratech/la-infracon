@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --white: #FFFFFF;
+  --ivory: #FAF7F2;
+  --beige: #E8DFD0;
+  --sand: #CDBFA8;
+  --taupe: #8C7B66;
+  --black: #0B0B0B;
+  --charcoal: #1A1A1A;
+}
+
+html {
+  background-color: var(--ivory);
+  color: var(--black);
+  font-family: 'Montserrat', sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lenis Smooth Scroll Recommended CSS */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Minimal Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #CDBFA8;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8C7B66;
+}
+
+/* Minimalist Editorial Buttons */
+
+/* On Light Backgrounds: Solid Black Button that inverts on hover */
+.btn-black {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0B0B0B;
+  color: #FFFFFF;
+  border: 1px solid #0B0B0B;
+  font-weight: 500;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-black::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #FFFFFF;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-black:hover {
+  color: #0B0B0B;
+  border-color: #0B0B0B;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.btn-black:hover::before {
+  transform: translateY(0);
+}
+
+/* On Light Backgrounds: Black Outline Button that fills black on hover */
+.btn-black-outline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #0B0B0B;
+  border: 1px solid #0B0B0B;
+  font-weight: 500;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-black-outline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #0B0B0B;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-black-outline:hover {
+  color: #FFFFFF;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.btn-black-outline:hover::before {
+  transform: translateY(0);
+}
+
+/* On Dark Sections: White Button that inverts on hover */
+.btn-white {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  color: #0B0B0B;
+  border: 1px solid #FFFFFF;
+  font-weight: 500;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-white::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #0B0B0B;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-white:hover {
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.btn-white:hover::before {
+  transform: translateY(0);
+}
+
+/* On Dark Sections: White Outline Button */
+.btn-white-outline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #FAF7F2;
+  border: 1px solid rgba(205, 191, 168, 0.5);
+  font-weight: 500;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-white-outline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #FAF7F2;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-white-outline:hover {
+  color: #0B0B0B;
+  border-color: #FAF7F2;
+}
+
+.btn-white-outline:hover::before {
+  transform: translateY(0);
+}
+
+/* Glass Panels & Luxury Cards */
+.card-luxury {
+  background: #FFFFFF;
+  border: 1px solid rgba(205, 191, 168, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+}
+
+.card-luxury-beige {
+  background: #E8DFD0;
+  border: 1px solid rgba(205, 191, 168, 0.6);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+}
+
+.card-luxury-dark {
+  background: #141414;
+  border: 1px solid rgba(205, 191, 168, 0.18);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Subtle Film Grain */
+.film-grain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Grayscale Image Hover Effect for Luxury Editorial Gallery */
+.editorial-img {
+  filter: grayscale(100%);
+  transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.editorial-img:hover,
+.group:hover .editorial-img {
+  filter: grayscale(0%);
+  transform: scale(1.04);
+}
+
+/* Reduced Motion Overrides */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
