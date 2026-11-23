@@ -16,14 +16,17 @@ export const initSmoothScroll = () => {
   }
 
   if (!lenis) {
+    const isTouchDevice = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
     lenis = new Lenis({
-      duration: 1.15,
+      duration: isTouchDevice ? 0.85 : 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: 1.8,
+      syncTouch: true, // Syncs with native touch scroll on mobile without locking
+      touchMultiplier: 1.0, // Natural 1:1 touch response
       infinite: false,
     });
 
@@ -34,7 +37,8 @@ export const initSmoothScroll = () => {
     };
 
     gsap.ticker.add(tickerCallback);
-    gsap.ticker.lagSmoothing(0);
+    // Use default GSAP lag smoothing to allow smooth recovery from minor frame drops on mobile
+    gsap.ticker.lagSmoothing(500, 33);
   }
 
   return lenis;

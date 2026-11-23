@@ -21,6 +21,7 @@ export default function Footer() {
   const footerRef = useRef(null);
   const wordmarkRef = useRef(null);
   const linksRef = useRef(null);
+  const bigWordmarkRef = useRef(null);
 
   const quickLinks = [
     { name: 'Home', href: '#hero' },
@@ -38,9 +39,28 @@ export default function Footer() {
     const footer = footerRef.current;
     const wordmark = wordmarkRef.current;
     const links = linksRef.current;
+    const bigWordmark = bigWordmarkRef.current;
     if (!footer || isReducedMotion()) return;
 
     const ctx = gsap.context(() => {
+      // Parallax upward reveal of big background wordmark
+      if (bigWordmark) {
+        gsap.fromTo(
+          bigWordmark,
+          { y: 50 },
+          {
+            y: -30,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: footer,
+              start: 'top bottom',
+              end: 'bottom bottom',
+              scrub: true,
+            },
+          }
+        );
+      }
+
       // Parallax upward reveal of wordmark
       if (wordmark) {
         gsap.fromTo(
@@ -249,6 +269,15 @@ export default function Footer() {
           </div>
         </div>
 
+      </div>
+
+      {/* Editorial Luxury Background Parallax Wordmark */}
+      <div
+        ref={bigWordmarkRef}
+        aria-hidden="true"
+        className="absolute -bottom-6 left-1/2 -translate-x-1/2 pointer-events-none select-none text-center whitespace-nowrap opacity-[0.06] font-serif text-[18vw] sm:text-[15vw] font-bold tracking-tighter leading-none text-white will-change-transform z-0"
+      >
+        LA INFRACON
       </div>
     </footer>
   );

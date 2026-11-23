@@ -215,12 +215,22 @@ export default function AmenitiesLocationSection() {
           </p>
         </div>
 
-        {/* 9 Amenities Grid with Diagonal Wave Delay */}
-        <div ref={amenitiesGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-28">
+        {/* Mobile Swipe Cue */}
+        <div className="sm:hidden flex items-center justify-end gap-1.5 text-[11px] font-mono text-taupe mb-3">
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-sand/30 border border-sand/50">
+            ← Swipe amenities →
+          </span>
+        </div>
+
+        {/* 9 Amenities: Horizontal swipeable on mobile, 3-column grid on desktop */}
+        <div
+          ref={amenitiesGridRef}
+          className="flex flex-row overflow-x-auto no-scrollbar snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 pb-4 sm:pb-0 mb-20 sm:mb-28 -mx-4 px-4 sm:mx-0 sm:px-0"
+        >
           {siteConfig.amenities.map((item) => (
             <div
               key={item.id}
-              className="amenity-card rounded-2xl p-6 bg-white border border-sand/45 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 group flex flex-col justify-between will-change-transform"
+              className="amenity-card w-[78vw] max-w-[290px] sm:max-w-none sm:w-auto shrink-0 snap-center rounded-2xl p-6 bg-white border border-sand/45 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 group flex flex-col justify-between will-change-transform"
             >
               <div>
                 <div className="amenity-icon w-12 h-12 rounded-xl bg-beige-light border border-sand/60 flex items-center justify-center mb-4 will-change-transform">

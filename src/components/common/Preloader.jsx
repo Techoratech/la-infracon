@@ -58,9 +58,12 @@ export default function Preloader({ onLoaded }) {
           initial={{ opacity: 1 }}
           exit={{
             y: '-100%',
-            transition: { duration: 0.85, ease: [0.77, 0, 0.175, 1] },
+            opacity: 0,
+            transition: { duration: 0.65, ease: [0.77, 0, 0.175, 1] },
           }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-ivory text-black select-none overflow-hidden"
+          className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-ivory text-black select-none overflow-hidden ${
+            isFinished ? 'pointer-events-none' : ''
+          }`}
         >
           {/* Subtle warm beige ambient backdrop */}
           <div className="absolute w-[500px] h-[500px] rounded-full bg-sand/15 blur-[120px] pointer-events-none" />

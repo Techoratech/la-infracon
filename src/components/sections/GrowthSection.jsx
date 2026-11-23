@@ -10,6 +10,9 @@ gsap.registerPlugin(ScrollTrigger);
 export default function GrowthSection() {
   const sectionRef = useRef(null);
   const pathRef = useRef(null);
+  const multiplierRef = useRef(null);
+  const surgeRef = useRef(null);
+  const lastProgressRef = useRef(0);
   const [multiplier, setMultiplier] = useState(1.0);
   const [dotPos, setDotPos] = useState({ x: 80, y: 220 });
   const [progressVal, setProgressVal] = useState(0);
@@ -30,6 +33,7 @@ export default function GrowthSection() {
 
     if (isReducedMotion()) {
       setMultiplier(siteConfig.growth.endMultiplier);
+      if (multiplierRef.current) multiplierRef.current.textContent = siteConfig.growth.endMultiplier.toFixed(2);
       setProgressVal(1);
       return;
     }
@@ -46,14 +50,19 @@ export default function GrowthSection() {
       start: 'top top',
       end: `+=${pinDistance}`,
       pin: true,
-      scrub: 0.5,
+      scrub: isMobile ? 0.3 : 0.5,
       onUpdate: (self) => {
         const p = self.progress;
-        setProgressVal(p);
 
-        // Scrub number from 1.00 to 3.64
+        // Scrub number from 1.00 to 3.64 using direct DOM manipulation for 60fps mobile speed
         const currentVal = siteConfig.growth.startMultiplier + (siteConfig.growth.endMultiplier - siteConfig.growth.startMultiplier) * p;
-        setMultiplier(currentVal);
+        if (multiplierRef.current) {
+          multiplierRef.current.textContent = currentVal.toFixed(2);
+        }
+        if (surgeRef.current) {
+          const surgePct = Math.round((currentVal - 1) * 100);
+          surgeRef.current.textContent = `+${surgePct}% Net Appreciation`;
+        }
 
         // Scrub line drawing
         const drawLength = pathLength * p;
@@ -67,6 +76,12 @@ export default function GrowthSection() {
           // fallback
           setDotPos({ x: 80 + 560 * p, y: 220 - 180 * p });
         }
+
+        // Throttled state update for descriptive text to avoid thrashing mobile CPU
+        if (Math.abs(p - lastProgressRef.current) > 0.05) {
+          lastProgressRef.current = p;
+          setProgressVal(p);
+        }
       },
     });
 
@@ -79,8 +94,11 @@ export default function GrowthSection() {
     <section
       id="growth"
       ref={sectionRef}
-      className="relative min-h-[100svh] bg-black text-white overflow-hidden flex flex-col justify-center py-16 sm:py-20 border-t border-b border-sand/20"
+      className="relative z-20 -mt-[100vh] sm:-mt-[100svh] min-h-[100svh] bg-black text-white overflow-hidden flex flex-col justify-center py-16 sm:py-20 rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.85)] border-t border-sand/30"
     >
+      {/* Luxury Pull-tab Indicator */}
+      <div className="w-12 h-1 bg-sand/35 rounded-full mx-auto mb-4 sm:mb-6" />
+
       {/* Background ambient accent */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-sand/5 blur-[160px] pointer-events-none" />
 
@@ -119,7 +137,10 @@ export default function GrowthSection() {
               </span>
 
               <div className="flex items-baseline gap-1 my-3 sm:my-4">
-                <span className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-white font-mono">
+                <span
+                  ref={multiplierRef}
+                  className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-white font-mono"
+                >
                   {multiplier.toFixed(2)}
                 </span>
                 <span className="font-serif text-4xl sm:text-5xl font-bold text-sand">x</span>
@@ -127,7 +148,7 @@ export default function GrowthSection() {
 
               <div className="inline-flex items-center gap-2 text-white bg-white/10 border border-sand/30 px-3.5 py-1.5 rounded-full text-xs font-mono font-medium mb-4">
                 <ArrowUpRight className="w-4 h-4 text-sand" />
-                <span>{siteConfig.growth.totalSurge} Net Appreciation</span>
+                <span ref={surgeRef}>{siteConfig.growth.totalSurge} Net Appreciation</span>
               </div>
 
               <p className="text-xs sm:text-sm text-sand/80 leading-relaxed font-light">

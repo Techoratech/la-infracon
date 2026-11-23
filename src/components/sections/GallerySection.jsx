@@ -147,57 +147,74 @@ export default function GallerySection() {
           </div>
         </div>
 
-        {/* Tab 1: Photos Grid with Clip-Path Reveal & Hover Zoom */}
+        {/* Tab 1: Photos Grid: Horizontal carousel on mobile, 3-column grid on desktop */}
         {activeTab === 'photos' && (
-          <div
-            ref={galleryGridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {siteConfig.gallery.map((item, index) => (
-              <div
-                key={item.id}
-                onClick={() => setLightboxIndex(index)}
-                className="gallery-card group relative rounded-2xl overflow-hidden bg-ivory border border-sand/40 shadow-luxury-sm hover:shadow-luxury aspect-[4/3] cursor-pointer will-change-transform"
-              >
-                <img
-                  src={item.src}
-                  alt={item.title}
-                  className="editorial-img w-full h-full object-cover"
-                  loading="lazy"
-                />
+          <div>
+            {/* Mobile Swipe Cue */}
+            <div className="sm:hidden flex items-center justify-end gap-1.5 text-[11px] font-mono text-taupe mb-3">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-sand/30 border border-sand/50">
+                ← Swipe photos →
+              </span>
+            </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-between text-white">
-                  <div className="flex justify-between items-start">
-                    <span className="px-2.5 py-1 rounded text-[10px] uppercase font-mono tracking-wider bg-white text-black font-bold">
-                      {item.category}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-black/60 border border-white/40 flex items-center justify-center text-white">
-                      <Maximize2 className="w-4 h-4" />
+            <div
+              ref={galleryGridRef}
+              className="flex flex-row overflow-x-auto no-scrollbar snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0"
+            >
+              {siteConfig.gallery.map((item, index) => (
+                <div
+                  key={item.id}
+                  onClick={() => setLightboxIndex(index)}
+                  className="gallery-card w-[82vw] max-w-[320px] sm:max-w-none sm:w-auto shrink-0 snap-center group relative rounded-2xl overflow-hidden bg-ivory border border-sand/40 shadow-luxury-sm hover:shadow-luxury aspect-[4/3] cursor-pointer will-change-transform"
+                >
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    className="editorial-img w-full h-full object-cover"
+                    loading="lazy"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-between text-white">
+                    <div className="flex justify-between items-start">
+                      <span className="px-2.5 py-1 rounded text-[10px] uppercase font-mono tracking-wider bg-white text-black font-bold">
+                        {item.category}
+                      </span>
+                      <div className="w-8 h-8 rounded-full bg-black/60 border border-white/40 flex items-center justify-center text-white">
+                        <Maximize2 className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white">
+                        {item.title}
+                      </h3>
+                      <p className="text-[11px] text-sand-light mt-1 font-light">
+                        Click to expand fullscreen
+                      </p>
                     </div>
                   </div>
-
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-white">
-                      {item.title}
-                    </h3>
-                    <p className="text-[11px] text-sand-light mt-1 font-light">
-                      Click to expand fullscreen
-                    </p>
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Tab 2: Site Visit Videos */}
+        {/* Tab 2: Site Visit Videos: Horizontal carousel on mobile, 3-column grid on desktop */}
         {activeTab === 'videos' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {siteConfig.siteVideos.map((video) => (
-              <div
-                key={video.id}
-                className="rounded-2xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury-sm hover:shadow-luxury flex flex-col group transition-all"
-              >
+          <div>
+            {/* Mobile Swipe Cue */}
+            <div className="md:hidden flex items-center justify-end gap-1.5 text-[11px] font-mono text-taupe mb-3">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-sand/30 border border-sand/50">
+                ← Swipe site videos →
+              </span>
+            </div>
+
+            <div className="flex flex-row overflow-x-auto no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-3 gap-6 md:gap-8 pb-4 md:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+              {siteConfig.siteVideos.map((video) => (
+                <div
+                  key={video.id}
+                  className="w-[85vw] max-w-[340px] md:max-w-none md:w-auto shrink-0 snap-center rounded-2xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury-sm hover:shadow-luxury flex flex-col group transition-all"
+                >
                 {/* Video Poster with Custom Pulsing Play Button */}
                 <div
                   onClick={() => setSelectedVideo(video)}
@@ -250,7 +267,8 @@ export default function GallerySection() {
               </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
 
       </div>
 

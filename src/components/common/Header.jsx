@@ -22,8 +22,14 @@ export default function Header() {
       const heroEl = document.getElementById('hero');
       const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
 
-      // Track if past hero
-      setIsPastHero(scrollY > heroHeight - 120);
+      // Switch header to light ivory glass when reaching the first light section (#about)
+      const aboutEl = document.getElementById('about');
+      if (aboutEl) {
+        const aboutRect = aboutEl.getBoundingClientRect();
+        setIsPastHero(aboutRect.top <= 100);
+      } else {
+        setIsPastHero(scrollY > heroHeight * 2);
+      }
 
       // Scroll progress
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;

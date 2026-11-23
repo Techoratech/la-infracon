@@ -99,12 +99,22 @@ export default function AboutSection() {
               ))}
             </div>
 
-            {/* Four Pillars Grid with stagger and icon pop */}
-            <div ref={pillarsRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-sand/40">
+            {/* Mobile Swipe Cue */}
+            <div className="sm:hidden flex items-center justify-end gap-1.5 text-[10px] font-mono text-taupe mb-2 pt-2">
+              <span className="inline-block px-2 py-0.5 rounded-full bg-sand/30 border border-sand/50">
+                ← Swipe pillars →
+              </span>
+            </div>
+
+            {/* Four Pillars: Horizontal swipe on mobile, 2-column grid on desktop */}
+            <div
+              ref={pillarsRef}
+              className="flex flex-row overflow-x-auto no-scrollbar snap-x snap-mandatory sm:grid sm:grid-cols-2 gap-4 pt-3 sm:pt-4 border-t border-sand/40 pb-3 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0"
+            >
               {siteConfig.about.pillars.map((pillar, idx) => (
                 <div
                   key={pillar.title}
-                  className="pillar-card p-5 rounded-2xl bg-white border border-sand/50 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 will-change-transform"
+                  className="pillar-card w-[78vw] max-w-[280px] sm:max-w-none sm:w-auto shrink-0 snap-center p-5 rounded-2xl bg-white border border-sand/50 shadow-luxury-sm hover:shadow-luxury transition-all duration-300 will-change-transform"
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2.5 rounded-xl bg-beige-light border border-sand/60">

@@ -57,6 +57,15 @@ html.lenis, html.lenis body {
   background: #8C7B66;
 }
 
+/* Hide scrollbar for mobile horizontal carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Minimalist Editorial Buttons */
 
 /* On Light Backgrounds: Solid Black Button that inverts on hover */

@@ -154,7 +154,7 @@ function AnimatedPlotCard({ plot, index, onSelectPlot }) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ transform, transition: 'transform 0.15s ease-out' }}
-      className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-white text-black shadow-luxury transition-all duration-300 will-change-transform ${
+      className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-white text-black shadow-luxury transition-all duration-300 will-change-transform w-[86vw] max-w-[340px] md:max-w-none md:w-auto shrink-0 snap-center ${
         plot.popular ? 'border-2 border-black' : 'border border-black/15'
       }`}
     >
@@ -267,8 +267,15 @@ export default function PlotAvailabilitySection({ onSelectPlot }) {
           </p>
         </div>
 
-        {/* 3 Animated Rising Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+        {/* Mobile Swipe Cue */}
+        <div className="md:hidden flex items-center justify-end gap-1.5 text-[11px] font-mono text-taupe mb-3">
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-sand/30 border border-sand/50">
+            ← Swipe plot sizes →
+          </span>
+        </div>
+
+        {/* 3 Animated Rising Cards: Horizontal swipe on mobile, 3-column grid on desktop */}
+        <div className="flex flex-row overflow-x-auto no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-4 md:pb-0 items-stretch -mx-4 px-4 sm:mx-0 sm:px-0">
           {siteConfig.plotSizes.map((plot, idx) => (
             <AnimatedPlotCard
               key={plot.id}

@@ -34,20 +34,24 @@ export default function HeroSection({ onOpenEnquiry }) {
     let currentFrame = 0;
     let targetFrame = 0;
     let animId = null;
+    let lastRenderedFrame = -1;
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Cap DPR on mobile at 1 for ultra-fast, smooth 60fps rendering without GPU stalls
+    const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
 
     const resizeCanvas = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.scale(dpr, dpr);
-      renderFrame(Math.round(currentFrame));
+      const initialFrame = Math.round(currentFrame);
+      renderFrame(initialFrame);
+      lastRenderedFrame = initialFrame;
     };
 
     const renderFrame = (index) => {
@@ -93,8 +97,14 @@ export default function HeroSection({ onOpenEnquiry }) {
 
     const tick = () => {
       const diff = targetFrame - currentFrame;
-      currentFrame += diff * 0.12;
-      renderFrame(Math.round(currentFrame));
+      if (Math.abs(diff) > 0.005) {
+        currentFrame += diff * (isMobile ? 0.2 : 0.12);
+        const frameIndex = Math.round(currentFrame);
+        if (frameIndex !== lastRenderedFrame) {
+          renderFrame(frameIndex);
+          lastRenderedFrame = frameIndex;
+        }
+      }
       animId = requestAnimationFrame(tick);
     };
     animId = requestAnimationFrame(tick);
@@ -106,22 +116,23 @@ export default function HeroSection({ onOpenEnquiry }) {
       start: 'top top',
       end: `+=${pinDistance}`,
       pin: true,
-      scrub: 0.6,
+      scrub: isMobile ? 0.3 : 0.6,
       onUpdate: (self) => {
         const p = self.progress;
         setScrollProgress(p);
         targetFrame = p * (totalFrames - 1);
 
-        // Subtle scale (1 -> 1.08) on canvas across pin
-        const scaleVal = 1 + p * 0.08;
+        // Subtle scale (1 -> 1.06) on canvas across pin
+        const scaleVal = 1 + p * 0.06;
         canvas.style.transform = `scale(${scaleVal})`;
 
-        // Fade hero out smoothly into next section at the end (from 0.88 to 1.0)
-        if (p > 0.88) {
-          const fadeOut = (1.0 - p) / 0.12;
-          container.style.opacity = `${Math.max(0, Math.min(1, fadeOut))}`;
+        // Cinematic depth: as the growth section slides up over the hero (p > 0.75),
+        // gently dim the background canvas so the overlapping card pops
+        if (p > 0.75) {
+          const dim = Math.max(0.65, 1 - (p - 0.75) * 1.4);
+          canvas.style.filter = `brightness(${dim})`;
         } else {
-          container.style.opacity = '1';
+          canvas.style.filter = 'brightness(1)';
         }
       },
     });
@@ -137,7 +148,11 @@ export default function HeroSection({ onOpenEnquiry }) {
     let opacity = 0;
     let translateY = 20;
 
-    if (scrollProgress >= enterStart && scrollProgress <= enterEnd) {
+    // Phase 1 starts fully visible immediately on page load (at scroll 0)
+    if (enterStart <= 0 && scrollProgress <= enterEnd) {
+      opacity = 1;
+      translateY = 0;
+    } else if (scrollProgress >= enterStart && scrollProgress <= enterEnd) {
       const factor = (scrollProgress - enterStart) / (enterEnd - enterStart);
       opacity = factor;
       translateY = 20 * (1 - factor);
@@ -148,19 +163,26 @@ export default function HeroSection({ onOpenEnquiry }) {
       const factor = (scrollProgress - exitStart) / (exitEnd - exitStart);
       opacity = 1 - factor;
       translateY = -20 * factor;
+    } else if (scrollProgress > exitEnd) {
+      opacity = 0;
+      translateY = -20;
     }
 
     return {
       opacity: Math.max(0, Math.min(1, opacity)),
       transform: `translateY(${translateY}px)`,
       pointerEvents: opacity > 0.4 ? 'auto' : 'none',
-      visibility: opacity <= 0 ? 'hidden' : 'visible',
+      visibility: opacity <= 0.01 ? 'hidden' : 'visible',
     };
   };
 
-  const phase1Style = getPhaseStyle(0.0, 0.08, 0.24, 0.32);
-  const phase2Style = getPhaseStyle(0.33, 0.41, 0.58, 0.66);
-  const phase3Style = getPhaseStyle(0.67, 0.75, 0.88, 0.95);
+  // Timings:
+  // Phase 1 is 100% visible on load, holds until 0.16, exits by 0.24
+  // Phase 2 enters 0.25, holds until 0.46, exits by 0.54
+  // Phase 3 enters 0.56, holds until 0.74, exits by 0.82
+  const phase1Style = getPhaseStyle(0.0, 0.16, 0.18, 0.25);
+  const phase2Style = getPhaseStyle(0.26, 0.34, 0.46, 0.54);
+  const phase3Style = getPhaseStyle(0.56, 0.64, 0.74, 0.82);
 
   const scrollIndicatorOpacity = Math.max(0, 1 - scrollProgress * 15);
 

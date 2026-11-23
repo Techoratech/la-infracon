@@ -237,16 +237,23 @@ export default function ProjectSection() {
           </div>
         </div>
 
-        {/* Sliding Track */}
+        {/* Sliding Track: Horizontal scroll carousel on mobile, pinned scroll on desktop */}
         <div className="overflow-visible px-4 sm:px-6 lg:px-8">
+          {/* Mobile Swipe Cue */}
+          <div className="md:hidden flex items-center justify-end gap-1.5 text-[11px] font-mono text-taupe mb-2.5">
+            <span className="inline-block px-2.5 py-0.5 rounded-full bg-sand/20 border border-sand/40">
+              ← Swipe to view plots →
+            </span>
+          </div>
+
           <div
             ref={trackRef}
-            className="flex flex-col md:flex-row gap-6 md:gap-8 will-change-transform"
+            className="flex flex-row overflow-x-auto md:overflow-visible no-scrollbar snap-x snap-mandatory md:snap-none gap-5 md:gap-8 pb-4 md:pb-0 will-change-transform"
           >
             {siteConfig.showcaseCards.map((card) => (
               <div
                 key={card.id}
-                className="showcase-slide w-full md:w-[480px] lg:w-[560px] shrink-0 rounded-3xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury flex flex-col group will-change-transform"
+                className="showcase-slide w-[85vw] max-w-[340px] md:max-w-none md:w-[480px] lg:w-[560px] shrink-0 snap-center rounded-3xl overflow-hidden bg-ivory border border-sand/50 shadow-luxury flex flex-col group will-change-transform"
               >
                 {/* Visual Image with Parallax & Scale */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-beige">
